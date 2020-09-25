@@ -22,7 +22,11 @@ namespace GruppeHessNetworkAssignment
         
         public override void OnCollision(GameObject other)
         {
-
+            if (other is Enemy)
+            {
+                GameWorld.Destroy(other);
+                GameWorld.Destroy(this);
+            }
         }
 
         public override void Update(GameTime gameTime)

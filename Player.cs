@@ -15,18 +15,16 @@ namespace GruppeHessNetworkAssignment
     {
 
         private bool canShoot = true;
-        private Timer cooldown;
+        private TimeSpan cooldown;
 
         public Player(Vector2 position)
         {
             this.position = position;
             speed = 200f;
             sprite = Asset.playerSprite;
-            cooldown = new TimeSpan(0, 0, 1);
+            cooldown = new TimeSpan(0, 0, 0, 0, 0);
         }
 
-
-      
 
         private void HandleInput()
         {
@@ -38,36 +36,31 @@ namespace GruppeHessNetworkAssignment
             //Get the current keyboard state
             KeyboardState keyState = Keyboard.GetState();
 
-    
-            if (keyState.IsKeyDown(Keys.A))
+
+            if (keyState.IsKeyDown(Keys.Left))
             {
                 //Move left
                 velocity += new Vector2(-1, 0);
             }
-          
-            if (keyState.IsKeyDown(Keys.D))
+
+            if (keyState.IsKeyDown(Keys.Right))
             {
                 //Move right
                 velocity += new Vector2(1, 0);
             }
 
 
-
-
-
             if (keyState.IsKeyDown(Keys.Space) && canShoot)
             {
-                GameWorld.Instantiate(new Laser(position));
+                GameWorld.Instantiate(new Laser(new Vector2(position.X+Asset.playerSprite.Width/2,position.Y)));
                 canShoot = false;
+                cooldown = new TimeSpan(0, 0, 0, 0, 100);
             }
 
-            if (keyState.IsKeyUp(Keys.Space))
+            if (keyState.IsKeyUp(Keys.Space) && cooldown <= TimeSpan.Zero)
             {
                 canShoot = true;
             }
-
-
-
 
 
             //If pressed a key, then we need to normalize the vector
@@ -79,19 +72,22 @@ namespace GruppeHessNetworkAssignment
             }
         }
 
-  
-
         public override void Update(GameTime gameTime)
         {
             HandleInput();
             Move(gameTime);
+
+            if (cooldown > TimeSpan.Zero)
+            {
+                cooldown -= gameTime.ElapsedGameTime;
+            }
         }
 
-    
+
 
         public override void OnCollision(GameObject other)
         {
-         
+
         }
     }
 }

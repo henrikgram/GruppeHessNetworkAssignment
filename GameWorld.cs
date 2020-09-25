@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using System;
 using System.Collections.Generic;
 
 namespace GruppeHessNetworkAssignment
@@ -13,8 +14,11 @@ namespace GruppeHessNetworkAssignment
         private List<GameObject> gameObjects = new List<GameObject>();
         private static List<GameObject> newGameObjects = new List<GameObject>();
         private static List<GameObject> deletedGameObjects = new List<GameObject>();
+        private TimeSpan timeTillNewInvasionForce = TimeSpan.Zero;
+        private Random rnd = new Random();
 
-        private Texture2D collisionTexture;
+        public Vector2 ScreenSize { get; private set; }
+
 
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
@@ -34,7 +38,7 @@ namespace GruppeHessNetworkAssignment
         protected override void Initialize()
         {
             // TODO: Add your initialization logic here
-      
+            ScreenSize = new Vector2(graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight);
 
             base.Initialize();
         }
@@ -50,7 +54,7 @@ namespace GruppeHessNetworkAssignment
 
             Asset.LoadContent(Content);
 
-            gameObjects.Add(new Player(new Vector2(200, 200)));
+            gameObjects.Add(new Player(new Vector2(ScreenSize.X/2, ScreenSize.Y-Asset.playerSprite.Height)));
             gameObjects.Add(new Enemy(new Vector2(300, 300)));
 
             // TODO: use this.Content to load your game content here
@@ -78,6 +82,11 @@ namespace GruppeHessNetworkAssignment
             //ads all objects in list-newobjects to list-gameobjects.
             gameObjects.AddRange(newGameObjects);
 
+            foreach (GameObject deletedObject in deletedGameObjects)
+            {
+                gameObjects.Remove(deletedObject);
+            }
+
             //deletes objects in list-deleteobjects.
             deletedGameObjects.Clear();
             //deletes objects in list-newobjects.
@@ -92,6 +101,13 @@ namespace GruppeHessNetworkAssignment
                 {
                     gameObject.CheckCollision(other);
                 }
+            }
+
+            AddNewEnemyShips();
+
+            if (timeTillNewInvasionForce > TimeSpan.Zero)
+            {
+                timeTillNewInvasionForce -= gameTime.ElapsedGameTime;
             }
 
             // TODO: Add your update logic here
@@ -113,6 +129,7 @@ namespace GruppeHessNetworkAssignment
             foreach (GameObject gameObject in gameObjects)
             {
                 gameObject.Draw(spriteBatch);
+                DrawCollisionBox(gameObject);
             }
 
             spriteBatch.End();
@@ -140,10 +157,23 @@ namespace GruppeHessNetworkAssignment
             Rectangle leftLine = new Rectangle(collisionBox.X, collisionBox.Y, 1, collisionBox.Height);
 
             /// Makes sure the collisionbox adjusts to each sprite.
-            spriteBatch.Draw(collisionTexture, topLine, null, Color.Red, 0, Vector2.Zero, SpriteEffects.None, 1);
-            spriteBatch.Draw(collisionTexture, bottomLine, null, Color.Red, 0, Vector2.Zero, SpriteEffects.None, 1);
-            spriteBatch.Draw(collisionTexture, rightLine, null, Color.Red, 0, Vector2.Zero, SpriteEffects.None, 1);
-            spriteBatch.Draw(collisionTexture, leftLine, null, Color.Red, 0, Vector2.Zero, SpriteEffects.None, 1);
+            spriteBatch.Draw(Asset.collisionBox, topLine, null, Color.Red, 0, Vector2.Zero, SpriteEffects.None, 1);
+            spriteBatch.Draw(Asset.collisionBox, bottomLine, null, Color.Red, 0, Vector2.Zero, SpriteEffects.None, 1);
+            spriteBatch.Draw(Asset.collisionBox, rightLine, null, Color.Red, 0, Vector2.Zero, SpriteEffects.None, 1);
+            spriteBatch.Draw(Asset.collisionBox, leftLine, null, Color.Red, 0, Vector2.Zero, SpriteEffects.None, 1);
+        }
+
+        private void AddNewEnemyShips()
+        {
+            if (timeTillNewInvasionForce <= TimeSpan.Zero)
+            {
+                for (int i = 0; i < 5; i++)
+                {
+                    newGameObjects.Add(new Enemy(new Vector2(rnd.Next(0, (int)ScreenSize.X - Asset.enemySprite.Width), 0 - Asset.enemySprite.Height)));
+                }
+
+                timeTillNewInvasionForce = new TimeSpan(0, 0, 3);
+            }
         }
     }
 }
