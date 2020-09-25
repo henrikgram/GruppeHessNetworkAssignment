@@ -19,7 +19,7 @@ namespace GruppeHessNetworkAssignment
         private TimeSpan timeTillNewInvasionForce = TimeSpan.Zero;
         private Random rnd = new Random();
         private int screenHeight = 1000;
-        public bool ProgramRunning { get; set; }
+        public bool ProgramRunning { get; set; } = true;
 
         private Server server;
         private static GameWorld instance;
@@ -61,7 +61,7 @@ namespace GruppeHessNetworkAssignment
             ScreenSize = new Vector2(graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight);
 
             // Instantiates the server.
-            //server = new Server();
+            server = new Server();
 
             base.Initialize();
         }

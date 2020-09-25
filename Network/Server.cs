@@ -12,12 +12,13 @@ namespace GruppeHessNetworkAssignment.Network
 {
     class Server
     {
+        private static int port = 11000;
+
         private static UdpClient receivingUdpClient = new UdpClient(port);
-        private static UdpClient udpClient = new UdpClient(port);
+        private static UdpClient udpClient = new UdpClient(/*port*/);
 
         private static IPEndPoint RemoteIpEndPoint = new IPEndPoint(IPAddress.Any, 0);
 
-        private static int port = 11000;
 
         public Server ()
         {
@@ -32,14 +33,25 @@ namespace GruppeHessNetworkAssignment.Network
         private static void Receiver()
         {
             Console.WriteLine("Waiting for a connection...");
-            try
-            {
 
-            }
-            catch (Exception e)
+            while (GameWorld.Instance.ProgramRunning)
             {
-                // Writes out the exception if any errors occur.
-                Console.WriteLine(e.ToString());
+                try
+                {
+                    //// Blocks until a message returns on this socket from a remote host.
+                    //Byte[] receiveBytes = receivingUdpClient.Receive(ref RemoteIpEndPoint);
+
+                    //string returnData = Encoding.UTF8.GetString(receiveBytes);
+
+                    //Console.WriteLine($"You received: {returnData.ToString()}");
+                    //Console.WriteLine($"Message was sent from: {RemoteIpEndPoint.Address.ToString()} \nOn port number: {RemoteIpEndPoint.Port.ToString()}");
+                    //Console.WriteLine();
+                }
+                catch (Exception e)
+                {
+                    // Writes out the exception if any errors occur.
+                    Console.WriteLine(e.ToString());
+                }
             }
         }
 

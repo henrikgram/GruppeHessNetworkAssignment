@@ -36,14 +36,20 @@ namespace GruppeHessNetworkAssignment
 
             if (keyState.IsKeyDown(Keys.Left))
             {
-                //Move left
-                velocity += new Vector2(-1, 0);
+                //Move left if inside bounds.
+                if (position.X >= 0)
+                {
+                    velocity += new Vector2(-1, 0);
+                }
             }
 
             if (keyState.IsKeyDown(Keys.Right))
             {
-                //Move right
-                velocity += new Vector2(1, 0);
+                //Move right if inside bounds.
+                if (position.X <= GameWorld.Instance.ScreenSize.X - sprite.Width)
+                {
+                    velocity += new Vector2(1, 0);
+                }
             }
 
             if (keyState.IsKeyDown(Keys.Space) && canShoot)
