@@ -16,9 +16,9 @@ namespace GruppeHessNetworkAssignment
         private static List<GameObject> deletedGameObjects = new List<GameObject>();
         private TimeSpan timeTillNewInvasionForce = TimeSpan.Zero;
         private Random rnd = new Random();
+        private int screenHeight = 1000;
 
         public Vector2 ScreenSize { get; private set; }
-
 
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
@@ -37,7 +37,9 @@ namespace GruppeHessNetworkAssignment
         /// </summary>
         protected override void Initialize()
         {
-            // TODO: Add your initialization logic here
+            // CHANGES THE SCREEN SIZE.
+            graphics.PreferredBackBufferHeight = screenHeight;
+            graphics.ApplyChanges();
             ScreenSize = new Vector2(graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight);
 
             base.Initialize();
@@ -121,8 +123,7 @@ namespace GruppeHessNetworkAssignment
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.CornflowerBlue);
-
+            GraphicsDevice.Clear(Color.Black);
 
             spriteBatch.Begin();
             // TODO: Add your drawing code here

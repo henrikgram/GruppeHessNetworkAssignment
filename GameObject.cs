@@ -24,7 +24,6 @@ namespace GruppeHessNetworkAssignment
                 return new Rectangle((int)position.X, (int)position.Y, sprite.Width, sprite.Height);
             }
         }
-
      
         public abstract void Update(GameTime gameTime);
 
@@ -51,6 +50,5 @@ namespace GruppeHessNetworkAssignment
                 OnCollision(other);
             }
         }
-
     }
 }

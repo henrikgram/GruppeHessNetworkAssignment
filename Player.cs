@@ -13,18 +13,16 @@ namespace GruppeHessNetworkAssignment
 {
     class Player : GameObject
     {
-
         private bool canShoot = true;
         private TimeSpan cooldown;
 
         public Player(Vector2 position)
         {
             this.position = position;
-            speed = 200f;
+            speed = 800f;
             sprite = Asset.playerSprite;
             cooldown = new TimeSpan(0, 0, 0, 0, 0);
         }
-
 
         private void HandleInput()
         {
@@ -35,7 +33,6 @@ namespace GruppeHessNetworkAssignment
 
             //Get the current keyboard state
             KeyboardState keyState = Keyboard.GetState();
-
 
             if (keyState.IsKeyDown(Keys.Left))
             {
@@ -49,19 +46,19 @@ namespace GruppeHessNetworkAssignment
                 velocity += new Vector2(1, 0);
             }
 
-
             if (keyState.IsKeyDown(Keys.Space) && canShoot)
             {
-                GameWorld.Instantiate(new Laser(new Vector2(position.X+Asset.playerSprite.Width/2,position.Y)));
+                // Shoot
+                GameWorld.Instantiate(new Laser(new Vector2(position.X+Asset.playerSprite.Width/2 - 5,position.Y - 30)));
                 canShoot = false;
                 cooldown = new TimeSpan(0, 0, 0, 0, 100);
             }
 
+            // Gives the shoot function a cooldown, so the player can't shoot endlessly.
             if (keyState.IsKeyUp(Keys.Space) && cooldown <= TimeSpan.Zero)
             {
                 canShoot = true;
             }
-
 
             //If pressed a key, then we need to normalize the vector
             //If we don't do this we will move faster 
@@ -83,11 +80,9 @@ namespace GruppeHessNetworkAssignment
             }
         }
 
-
-
         public override void OnCollision(GameObject other)
         {
-
+            // Player doesn't have any collision with anything.
         }
     }
 }
