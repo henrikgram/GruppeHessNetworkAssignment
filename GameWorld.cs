@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using GruppeHessNetworkAssignment.Network;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
@@ -14,9 +15,26 @@ namespace GruppeHessNetworkAssignment
         private List<GameObject> gameObjects = new List<GameObject>();
         private static List<GameObject> newGameObjects = new List<GameObject>();
         private static List<GameObject> deletedGameObjects = new List<GameObject>();
+
         private TimeSpan timeTillNewInvasionForce = TimeSpan.Zero;
         private Random rnd = new Random();
         private int screenHeight = 1000;
+        public bool ProgramRunning { get; set; }
+
+        private Server server;
+        private static GameWorld instance;
+
+        public static GameWorld Instance
+        {
+            get
+            {
+                if(instance == null)
+                {
+                    instance = new GameWorld();
+                }
+                return instance;
+            }
+        }
 
         public Vector2 ScreenSize { get; private set; }
 
@@ -41,6 +59,9 @@ namespace GruppeHessNetworkAssignment
             graphics.PreferredBackBufferHeight = screenHeight;
             graphics.ApplyChanges();
             ScreenSize = new Vector2(graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight);
+
+            // Instantiates the server.
+            //server = new Server();
 
             base.Initialize();
         }
@@ -79,7 +100,9 @@ namespace GruppeHessNetworkAssignment
         protected override void Update(GameTime gameTime)
         {
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
+            {
                 Exit();
+            }
 
             //ads all objects in list-newobjects to list-gameobjects.
             gameObjects.AddRange(newGameObjects);

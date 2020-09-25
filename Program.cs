@@ -14,7 +14,7 @@ namespace GruppeHessNetworkAssignment
         [STAThread]
         static void Main()
         {
-            using (var game = new GameWorld())
+            using (var game = GameWorld.Instance)
                 game.Run();
         }
     }

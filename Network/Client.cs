@@ -8,5 +8,6 @@ namespace GruppeHessNetworkAssignment.Network
 {
     class Client
     {
+
     }
 }
