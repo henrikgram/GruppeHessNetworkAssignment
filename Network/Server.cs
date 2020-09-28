@@ -19,7 +19,10 @@ namespace GruppeHessNetworkAssignment.Network
 
         public int Port { get => port; }
 
-        //private static IPEndPoint RemoteIpEndPoint = new IPEndPoint(IPAddress.Any, 0);
+        private static IPEndPoint RemoteIpEndPoint = new IPEndPoint(IPAddress.Any, 0);
+
+        private string remoteAdress;
+        private int remotePort;
 
 
         public Server ()
@@ -42,7 +45,7 @@ namespace GruppeHessNetworkAssignment.Network
 
             while (GameWorld.Instance.ProgramRunning)
             {
-                IPEndPoint RemoteIpEndPoint = new IPEndPoint(IPAddress.Any, 0);
+                RemoteIpEndPoint = new IPEndPoint(IPAddress.Any, 0);
 
                 try
                 {
@@ -75,8 +78,10 @@ namespace GruppeHessNetworkAssignment.Network
 
                 try
                 {
-                    //udpClient.Connect(RemoteIpEndPoint.Address, port);
-                    udpClient.Connect("127.0.0.1" , 13000);
+                  
+                    udpClient.Connect(RemoteIpEndPoint.Address, RemoteIpEndPoint.Port);
+                  
+                    //udpClient.Connect("192.168.87.130" , 13000);
 
                     //message = "Hvaså smukke pige skal du ind i mujaffas bmw?";
 
