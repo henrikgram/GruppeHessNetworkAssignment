@@ -30,7 +30,7 @@ namespace GruppeHessNetworkAssignment.Network
         /// <summary>
         /// Receives information from players (clients).
         /// </summary>
-        private static void Receiver()
+        private void Receiver()
         {
             Console.WriteLine("Waiting for a connection...");
 
@@ -39,13 +39,13 @@ namespace GruppeHessNetworkAssignment.Network
                 try
                 {
                     //// Blocks until a message returns on this socket from a remote host.
-                    //Byte[] receiveBytes = receivingUdpClient.Receive(ref RemoteIpEndPoint);
+                    Byte[] receiveBytes = receivingUdpClient.Receive(ref RemoteIpEndPoint);
 
-                    //string returnData = Encoding.UTF8.GetString(receiveBytes);
+                    string returnData = Encoding.UTF8.GetString(receiveBytes);
 
-                    //Console.WriteLine($"You received: {returnData.ToString()}");
-                    //Console.WriteLine($"Message was sent from: {RemoteIpEndPoint.Address.ToString()} \nOn port number: {RemoteIpEndPoint.Port.ToString()}");
-                    //Console.WriteLine();
+                    Console.WriteLine($"You received: {returnData.ToString()}");
+                    Console.WriteLine($"Message was sent from: {RemoteIpEndPoint.Address.ToString()} \nOn port number: {RemoteIpEndPoint.Port.ToString()}");
+                    Console.WriteLine();
                 }
                 catch (Exception e)
                 {
@@ -60,16 +60,16 @@ namespace GruppeHessNetworkAssignment.Network
         /// </summary>
         public void SendMethod()
         {
-            IPAddress tmpIPAddress = null;
+            //IPAddress tmpIPAddress = null;
             string message = "Fuck off";
             // Makes sure the thread keeps running until the game is closed.
             while (GameWorld.Instance.ProgramRunning)
             {
-                tmpIPAddress = RemoteIpEndPoint.Address;
+                //tmpIPAddress = RemoteIpEndPoint.Address;
 
                 try
                 {
-                    udpClient.Connect(tmpIPAddress, port);
+                    udpClient.Connect(RemoteIpEndPoint.Address, port);
 
                     Byte[] sendBytes = Encoding.UTF8.GetBytes(message);
                     udpClient.Send(sendBytes, sendBytes.Length);

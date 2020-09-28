@@ -135,6 +135,8 @@ namespace GruppeHessNetworkAssignment
                 timeTillNewInvasionForce -= gameTime.ElapsedGameTime;
             }
 
+            server.SendMethod();
+
             // TODO: Add your update logic here
 
             base.Update(gameTime);
