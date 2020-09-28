@@ -1,8 +1,10 @@
-﻿using Microsoft.Xna.Framework;
+﻿using GruppeHessNetworkAssignment.Network;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace GruppeHessNetworkAssignment
 {
@@ -14,9 +16,32 @@ namespace GruppeHessNetworkAssignment
         private List<GameObject> gameObjects = new List<GameObject>();
         private static List<GameObject> newGameObjects = new List<GameObject>();
         private static List<GameObject> deletedGameObjects = new List<GameObject>();
+
         private TimeSpan timeTillNewInvasionForce = TimeSpan.Zero;
         private Random rnd = new Random();
         private int screenHeight = 1000;
+        public bool ProgramRunning { get; set; } = true;
+
+        private Server server;
+        private Client client;
+        private static GameWorld instance;
+        private Player player;
+
+        private bool startScreen = true;
+        private bool serverMode = false;
+
+
+        public static GameWorld Instance
+        {
+            get
+            {
+                if(instance == null)
+                {
+                    instance = new GameWorld();
+                }
+                return instance;
+            }
+        }
 
         public Vector2 ScreenSize { get; private set; }
 
@@ -37,12 +62,61 @@ namespace GruppeHessNetworkAssignment
         /// </summary>
         protected override void Initialize()
         {
+            ServerClientSetup();
+
             // CHANGES THE SCREEN SIZE.
             graphics.PreferredBackBufferHeight = screenHeight;
             graphics.ApplyChanges();
             ScreenSize = new Vector2(graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight);
 
             base.Initialize();
+        }
+
+        /// <summary>
+        /// Determine whether the game should start in Server-mode (host) or Client-mode (join server).
+        /// Runs at the beginning of the game thought the Initialize method.
+        /// </summary>
+        private void ServerClientSetup()
+        {
+            while (startScreen == true)
+            {
+                Console.WriteLine("Server (S) or Client (C)?");
+                string input = Console.ReadLine().ToUpper();
+
+                if (input == "S")
+                {
+                    // Instantiates the server, if the game starts in server mode.
+
+                  
+                    server = new Server();
+                    serverMode = true;
+                    startScreen = false;
+
+                    Console.WriteLine($"Server started on port: {server.Port} ");
+
+                    //server.Send((player.Position.X).ToString());
+                }
+
+                else if (input == "C")
+                {
+                    // Instantiates a client, if the game starts in player mode.
+
+                    Console.WriteLine("What port would you like to connect to?");
+                    client = new Client(Int32.Parse(Console.ReadLine()));
+
+
+                    serverMode = false;
+                    startScreen = false;
+
+                    //client.Send((player.Position.X).ToString());
+                }
+
+                else
+                {
+                    Console.WriteLine("Invalid input.");
+                    startScreen = true;
+                }
+            }
         }
 
         /// <summary>
@@ -56,7 +130,7 @@ namespace GruppeHessNetworkAssignment
 
             Asset.LoadContent(Content);
 
-            gameObjects.Add(new Player(new Vector2(ScreenSize.X/2, ScreenSize.Y-Asset.playerSprite.Height)));
+            gameObjects.Add(player = new Player(new Vector2(ScreenSize.X/2, ScreenSize.Y-Asset.playerSprite.Height)));
             gameObjects.Add(new Enemy(new Vector2(300, 300)));
 
             // TODO: use this.Content to load your game content here
@@ -78,8 +152,25 @@ namespace GruppeHessNetworkAssignment
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
+           
+
+           
+
+            if (serverMode)
+            {
+                server.Send((player.Position.X).ToString());
+            }
+
+            if (!serverMode)
+            {
+                client.Send((player.Position.X).ToString());
+            }
+
+
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
+            {
                 Exit();
+            }
 
             //ads all objects in list-newobjects to list-gameobjects.
             gameObjects.AddRange(newGameObjects);

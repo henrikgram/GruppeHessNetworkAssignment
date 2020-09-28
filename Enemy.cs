@@ -13,7 +13,7 @@ namespace GruppeHessNetworkAssignment
     {
         public Enemy(Vector2 position)
         {
-            this.position = position;
+            this.Position = position;
             velocity = new Vector2(0, 1);
             speed = 100f;
             sprite = Asset.enemySprite;
