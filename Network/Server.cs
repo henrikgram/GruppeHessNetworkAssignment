@@ -14,8 +14,10 @@ namespace GruppeHessNetworkAssignment.Network
     {
         private static int port = 11000;
 
-        private static UdpClient receivingUdpClient = new UdpClient(port);
-        private static UdpClient udpClient = new UdpClient();
+        private  UdpClient receivingUdpClient = new UdpClient(port);
+        private  UdpClient udpClient = new UdpClient();
+
+        public int Port { get => port; }
 
         //private static IPEndPoint RemoteIpEndPoint = new IPEndPoint(IPAddress.Any, 0);
 
@@ -67,7 +69,7 @@ namespace GruppeHessNetworkAssignment.Network
         public void Send(string message)
         {
             // Makes sure the thread keeps running until the game is closed.
-            while (GameWorld.Instance.ProgramRunning)
+            //while (GameWorld.Instance.ProgramRunning)
             {
                 //tmpIPAddress = RemoteIpEndPoint.Address;
 

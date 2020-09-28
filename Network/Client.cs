@@ -12,12 +12,15 @@ namespace GruppeHessNetworkAssignment.Network
     class Client
     {
         private static int port = 13000;
+        private int remotePort;
 
         private UdpClient udpClient = new UdpClient(port);
 
 
-        public Client()
+        public Client(int port)
         {
+            remotePort = port;
+
             Thread receivingThread = new Thread(Receive);
             receivingThread.IsBackground = true;
             receivingThread.Start();
@@ -26,12 +29,12 @@ namespace GruppeHessNetworkAssignment.Network
 
         public void Send(string message)
         {
-            while (true)
+            //while (true)
             {
 
                 try
                 {
-                    udpClient.Connect("127.0.0.1", 11000);
+                    udpClient.Connect("127.0.0.1", remotePort);
 
                     //message = "B)";
 
@@ -49,7 +52,7 @@ namespace GruppeHessNetworkAssignment.Network
 
         public void Receive()
         {
-            while (true)
+            //while (true)
             {
                 IPEndPoint RemoteIpEndPoint = new IPEndPoint(IPAddress.Any, 0);
 
