@@ -63,6 +63,8 @@ namespace GruppeHessNetworkAssignment
             // Instantiates the server.
             server = new Server();
 
+            Console.WriteLine("Stinnas test");
+
             base.Initialize();
         }
 
