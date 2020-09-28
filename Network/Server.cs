@@ -15,27 +15,33 @@ namespace GruppeHessNetworkAssignment.Network
         private static int port = 11000;
 
         private static UdpClient receivingUdpClient = new UdpClient(port);
-        private static UdpClient udpClient = new UdpClient(/*port*/);
+        private static UdpClient udpClient = new UdpClient();
 
-        private static IPEndPoint RemoteIpEndPoint = new IPEndPoint(IPAddress.Any, 0);
+        //private static IPEndPoint RemoteIpEndPoint = new IPEndPoint(IPAddress.Any, 0);
 
 
         public Server ()
         {
-            Thread receivingThread = new Thread(Receiver);
+            Thread receivingThread = new Thread(Recieve);
             receivingThread.IsBackground = true;
             receivingThread.Start();
+
+            //Thread sendingThread = new Thread(SendMethod);
+            //sendingThread.IsBackground = true;
+            //sendingThread.Start();
         }
 
         /// <summary>
         /// Receives information from players (clients).
         /// </summary>
-        private void Receiver()
+        private void Recieve()
         {
             Console.WriteLine("Waiting for a connection...");
 
             while (GameWorld.Instance.ProgramRunning)
             {
+                IPEndPoint RemoteIpEndPoint = new IPEndPoint(IPAddress.Any, 0);
+
                 try
                 {
                     //// Blocks until a message returns on this socket from a remote host.
@@ -43,9 +49,9 @@ namespace GruppeHessNetworkAssignment.Network
 
                     string returnData = Encoding.UTF8.GetString(receiveBytes);
 
-                    Console.WriteLine($"You received: {returnData.ToString()}");
-                    Console.WriteLine($"Message was sent from: {RemoteIpEndPoint.Address.ToString()} \nOn port number: {RemoteIpEndPoint.Port.ToString()}");
-                    Console.WriteLine();
+                    Console.WriteLine($"Server received: {returnData}");
+                    //Console.WriteLine($"Message was sent from: {RemoteIpEndPoint.Address.ToString()} \nOn port number: {RemoteIpEndPoint.Port.ToString()}");
+                    //Console.WriteLine();
                 }
                 catch (Exception e)
                 {
@@ -58,10 +64,8 @@ namespace GruppeHessNetworkAssignment.Network
         /// <summary>
         /// This send information to the players (clients).
         /// </summary>
-        public void SendMethod()
+        public void Send(string message)
         {
-            //IPAddress tmpIPAddress = null;
-            string message = "Fuck off";
             // Makes sure the thread keeps running until the game is closed.
             while (GameWorld.Instance.ProgramRunning)
             {
@@ -69,7 +73,10 @@ namespace GruppeHessNetworkAssignment.Network
 
                 try
                 {
-                    udpClient.Connect(RemoteIpEndPoint.Address, port);
+                    //udpClient.Connect(RemoteIpEndPoint.Address, port);
+                    udpClient.Connect("127.0.0.1" , 13000);
+
+                    //message = "Hvaså smukke pige skal du ind i mujaffas bmw?";
 
                     Byte[] sendBytes = Encoding.UTF8.GetBytes(message);
                     udpClient.Send(sendBytes, sendBytes.Length);

@@ -18,7 +18,7 @@ namespace GruppeHessNetworkAssignment
 
         public Player(Vector2 position)
         {
-            this.position = position;
+            this.Position = position;
             speed = 800f;
             sprite = Asset.playerSprite;
             cooldown = new TimeSpan(0, 0, 0, 0, 0);
@@ -37,7 +37,7 @@ namespace GruppeHessNetworkAssignment
             if (keyState.IsKeyDown(Keys.Left))
             {
                 //Move left if inside bounds.
-                if (position.X >= 0)
+                if (Position.X >= 0)
                 {
                     velocity += new Vector2(-1, 0);
                 }
@@ -46,7 +46,7 @@ namespace GruppeHessNetworkAssignment
             if (keyState.IsKeyDown(Keys.Right))
             {
                 //Move right if inside bounds.
-                if (position.X <= GameWorld.Instance.ScreenSize.X - sprite.Width)
+                if (Position.X <= GameWorld.Instance.ScreenSize.X - sprite.Width)
                 {
                     velocity += new Vector2(1, 0);
                 }
@@ -55,7 +55,7 @@ namespace GruppeHessNetworkAssignment
             if (keyState.IsKeyDown(Keys.Space) && canShoot)
             {
                 // Shoot
-                GameWorld.Instantiate(new Laser(new Vector2(position.X+Asset.playerSprite.Width/2 - 5,position.Y - 30)));
+                GameWorld.Instantiate(new Laser(new Vector2(Position.X+Asset.playerSprite.Width/2 - 5,Position.Y - 30)));
                 canShoot = false;
                 cooldown = new TimeSpan(0, 0, 0, 0, 100);
             }

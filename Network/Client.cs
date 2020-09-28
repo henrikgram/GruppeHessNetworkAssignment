@@ -11,9 +11,10 @@ namespace GruppeHessNetworkAssignment.Network
 {
     class Client
     {
-        private UdpClient udpClient = new UdpClient(11000);
+        private static int port = 13000;
 
-        private string message = "";
+        private UdpClient udpClient = new UdpClient(port);
+
 
         public Client()
         {
@@ -23,16 +24,16 @@ namespace GruppeHessNetworkAssignment.Network
         }
 
 
-        public void Send()
+        public void Send(string message)
         {
             while (true)
             {
 
                 try
                 {
-                    udpClient.Connect("10.131.70.10", 11000);
+                    udpClient.Connect("127.0.0.1", 11000);
 
-                    message = Console.ReadLine();
+                    //message = "B)";
 
                     // Sends a message to the host to which you have connected.
                     Byte[] sendBytes = Encoding.ASCII.GetBytes(message);
@@ -60,12 +61,12 @@ namespace GruppeHessNetworkAssignment.Network
 
                     string returnData = Encoding.ASCII.GetString(receiveBytes);
 
-                    Console.WriteLine("This is the message you received " +
+                    Console.WriteLine("Client received: " +
                                               returnData.ToString());
-                    Console.WriteLine("This message was sent from " +
-                                                RemoteIpEndPoint.Address.ToString() +
-                                                " on their port number " +
-                                                RemoteIpEndPoint.Port.ToString());
+                    //Console.WriteLine("This message was sent from " +
+                    //                            RemoteIpEndPoint.Address.ToString() +
+                    //                            " on their port number " +
+                    //                            RemoteIpEndPoint.Port.ToString());
                 }
                 catch (Exception e)
                 {

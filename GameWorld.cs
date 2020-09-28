@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace GruppeHessNetworkAssignment
 {
@@ -22,7 +23,13 @@ namespace GruppeHessNetworkAssignment
         public bool ProgramRunning { get; set; } = true;
 
         private Server server;
+        private Client client;
         private static GameWorld instance;
+        private Player player;
+
+        private bool startScreen = true;
+        private bool serverMode = false;
+
 
         public static GameWorld Instance
         {
@@ -62,8 +69,7 @@ namespace GruppeHessNetworkAssignment
 
             // Instantiates the server.
             server = new Server();
-
-            Console.WriteLine("Stinnas test");
+            client = new Client();
 
             base.Initialize();
         }
@@ -79,7 +85,7 @@ namespace GruppeHessNetworkAssignment
 
             Asset.LoadContent(Content);
 
-            gameObjects.Add(new Player(new Vector2(ScreenSize.X/2, ScreenSize.Y-Asset.playerSprite.Height)));
+            gameObjects.Add(player = new Player(new Vector2(ScreenSize.X/2, ScreenSize.Y-Asset.playerSprite.Height)));
             gameObjects.Add(new Enemy(new Vector2(300, 300)));
 
             // TODO: use this.Content to load your game content here
@@ -101,6 +107,36 @@ namespace GruppeHessNetworkAssignment
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
+            Console.WriteLine("Server (S) or Client (C)?");
+
+            while (startScreen == true)
+            {
+                string input = Console.ReadLine().ToUpper();
+
+                if (input == "S")
+                {
+                    serverMode = true;
+                    startScreen = false;
+
+                    server.Send((player.Position.X).ToString());
+                }
+
+                else if (input == "C")
+                {
+                    serverMode = false;
+                    startScreen = false;
+
+                    client.Send((player.Position.X).ToString());
+                }
+
+                else
+                {
+                    Console.WriteLine("Invalid input.");
+                    startScreen = true;
+                }
+            }
+
+
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
             {
                 Exit();
@@ -136,8 +172,6 @@ namespace GruppeHessNetworkAssignment
             {
                 timeTillNewInvasionForce -= gameTime.ElapsedGameTime;
             }
-
-            server.SendMethod();
 
             // TODO: Add your update logic here
 
