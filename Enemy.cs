@@ -28,7 +28,6 @@ namespace GruppeHessNetworkAssignment
         public override void Update(GameTime gameTime)
         {
             Move(gameTime);
-
         }
     }
 }

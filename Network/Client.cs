@@ -26,6 +26,9 @@ namespace GruppeHessNetworkAssignment.Network
             Thread receivingThread = new Thread(Receive);
             receivingThread.IsBackground = true;
             receivingThread.Start();
+
+            //GameWorld.Instance.PlayerCount++;
+            //Send("P");
         }
 
 
@@ -52,13 +55,14 @@ namespace GruppeHessNetworkAssignment.Network
 
         public void Receive()
         {
-            while (true)
+            // This bool becomes false when the player exits the game.
+            // Makes sure the thread dies so the game can shut down properly.
+            while (GameWorld.Instance.ProgramRunning)
             {
                 IPEndPoint RemoteIpEndPoint = new IPEndPoint(IPAddress.Any, 0);
 
                 try
                 {
-
                     // Blocks until a message returns on this socket from a remote host.
                     Byte[] receiveBytes = recievingUdpClient.Receive(ref RemoteIpEndPoint);
 

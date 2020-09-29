@@ -16,12 +16,7 @@ namespace GruppeHessNetworkAssignment.Network
 
         private UdpClient receivingUdpClient = new UdpClient(port);
         private UdpClient udpClient = new UdpClient();
-        string returnData;
-
-        int test;
-
-
-
+        private string returnData;
 
         public int Port { get => port; }
         public string ReturnData { get => returnData; }
@@ -68,7 +63,9 @@ namespace GruppeHessNetworkAssignment.Network
         {
             Console.WriteLine("Waiting for a connection...");
 
-            while (/*GameWorld.Instance.ProgramRunning*/true)
+            // This bool becomes false when the player exits the game.
+            // Makes sure the thread dies so the game can shut down properly.
+            while (GameWorld.Instance.ProgramRunning)
             {
                 remoteIpEndPoint = new IPEndPoint(IPAddress.Any, 0);
                 //tmpIPAdress = remoteIpEndPoint.Address;

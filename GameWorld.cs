@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Threading;
 
 namespace GruppeHessNetworkAssignment
@@ -18,9 +19,8 @@ namespace GruppeHessNetworkAssignment
         private static List<GameObject> deletedGameObjects = new List<GameObject>();
 
         private TimeSpan timeTillNewInvasionForce = TimeSpan.Zero;
-        private Random rnd = new Random();
+        private Random rnd = new Random(500);
         private int screenHeight = 1000;
-        public bool ProgramRunning { get; set; } = true;
 
         private Server server;
         private Client client;
@@ -29,6 +29,10 @@ namespace GruppeHessNetworkAssignment
 
         private bool startScreen = true;
         private bool isServer = false;
+        private byte maxPlayers = 1;
+
+        public byte PlayerCount { get; set; } = 0;
+        public bool ProgramRunning { get; set; } = true;
 
 
         public static GameWorld Instance
@@ -155,56 +159,66 @@ namespace GruppeHessNetworkAssignment
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-            if (isServer)
-            {
-                //server.Send(player.Position.X.ToString());
-            }
-
-            //if (!isServer)
+            //if (IsServer && ServerInstance.ReturnData == "P")
             //{
-            //    client.Send(player.Position.X.ToString());
+            //    PlayerCount++;
             //}
 
+            //if (PlayerCount == maxPlayers)
+            //{
+                //For two player, so the server can send a pos back to the client.
+                //if (isServer)
+                //{
+                //    server.Send(player.Position.X.ToString());
+                //}
 
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
-            {
-                Exit();
-            }
-
-            //ads all objects in list-newobjects to list-gameobjects.
-            gameObjects.AddRange(newGameObjects);
-
-            foreach (GameObject deletedObject in deletedGameObjects)
-            {
-                gameObjects.Remove(deletedObject);
-            }
-
-            //deletes objects in list-deleteobjects.
-            deletedGameObjects.Clear();
-            //deletes objects in list-newobjects.
-            newGameObjects.Clear();
-
-
-            foreach (GameObject gameObject in gameObjects)
-            {
-                gameObject.Update(gameTime);
-
-                foreach (GameObject other in gameObjects)
+                // Makes sure the client sends the player's opdated position to the server.
+                if (!isServer)
                 {
-                    gameObject.CheckCollision(other);
+                    client.Send(player.Position.X.ToString());
                 }
-            }
 
-            AddNewEnemyShips();
+                if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
+                {
+                    // Makes sure all the threads stop running.
+                    ProgramRunning = false;
+                    Exit();
+                }
 
-            if (timeTillNewInvasionForce > TimeSpan.Zero)
-            {
-                timeTillNewInvasionForce -= gameTime.ElapsedGameTime;
-            }
+                //ads all objects in list-newobjects to list-gameobjects.
+                gameObjects.AddRange(newGameObjects);
 
-            // TODO: Add your update logic here
+                foreach (GameObject deletedObject in deletedGameObjects)
+                {
+                    gameObjects.Remove(deletedObject);
+                }
 
-            base.Update(gameTime);
+                //deletes objects in list-deleteobjects.
+                deletedGameObjects.Clear();
+                //deletes objects in list-newobjects.
+                newGameObjects.Clear();
+
+                foreach (GameObject gameObject in gameObjects)
+                {
+                    gameObject.Update(gameTime);
+
+                    foreach (GameObject other in gameObjects)
+                    {
+                        gameObject.CheckCollision(other);
+                    }
+                }
+
+                AddNewEnemyShips();
+
+                if (timeTillNewInvasionForce > TimeSpan.Zero)
+                {
+                    timeTillNewInvasionForce -= gameTime.ElapsedGameTime;
+                }
+
+                // TODO: Add your update logic here
+
+                base.Update(gameTime);
+            //}           
         }
 
         /// <summary>

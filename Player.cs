@@ -34,7 +34,6 @@ namespace GruppeHessNetworkAssignment
             //Get the current keyboard state
             KeyboardState keyState = Keyboard.GetState();
 
-           
             if (keyState.IsKeyDown(Keys.Left))
             {
                 //Move left if inside bounds.
@@ -55,10 +54,11 @@ namespace GruppeHessNetworkAssignment
 
             if (keyState.IsKeyDown(Keys.Space) && canShoot)
             {
-                // Shoot
-         
-                GameWorld.Instantiate(new Laser(new Vector2(Position.X+Asset.playerSprite.Width/2 - 5,Position.Y - 30)));
+                // Shoot        
+                GameWorld.Instantiate(new Laser(new Vector2(Position.X + Asset.playerSprite.Width / 2 - 5, Position.Y - 30)));
+                // Client sends a message to the server, so the server knows to shoot from the player as well.
                 GameWorld.Instance.ClientInstance.Send("s");
+                // Two next functions make sure shoot has a cool down.
                 canShoot = false;
                 cooldown = new TimeSpan(0, 0, 0, 0, 100);
             }
@@ -66,9 +66,8 @@ namespace GruppeHessNetworkAssignment
             // Gives the shoot function a cooldown, so the player can't shoot endlessly.
             if (keyState.IsKeyUp(Keys.Space) && cooldown <= TimeSpan.Zero)
             {
-               
+                // Once the cool down reaches 0, the player can shoot again.
                 canShoot = true;
-                
             }
 
             //If pressed a key, then we need to normalize the vector
@@ -82,30 +81,29 @@ namespace GruppeHessNetworkAssignment
 
         public override void Update(GameTime gameTime)
         {
-           
 
-            if (GameWorld.Instance.IsServer == true)
+
+            if (GameWorld.Instance.IsServer == true && GameWorld.Instance.ServerInstance.ReturnData != null)
             {
 
                 //try
                 {
-                    if (GameWorld.Instance.ServerInstance.ReturnData != null)
+                    string serverInput = GameWorld.Instance.ServerInstance.ReturnData;
+
+                    if (serverInput == "s")
                     {
-                        string serverInput = GameWorld.Instance.ServerInstance.ReturnData;
-
-                        if (serverInput == "s")
-                        {
-                            GameWorld.Instantiate(new Laser(new Vector2(Position.X + Asset.playerSprite.Width / 2 - 5, Position.Y - 30)));
-                        }
-                        else
-                        {
-                            int test = test = Convert.ToInt32(Math.Round(Convert.ToDouble(GameWorld.Instance.ServerInstance.ReturnData)));
-
-                            Position = new Vector2(test, Position.Y);
-                        }
-
+                        GameWorld.Instantiate(new Laser(new Vector2(Position.X + Asset.playerSprite.Width / 2 - 5, Position.Y - 30)));
                     }
+                    //else if (serverInput == "P")
+                    //{
 
+                    //}
+                    else
+                    {
+                        int test = test = Convert.ToInt32(Math.Round(Convert.ToDouble(GameWorld.Instance.ServerInstance.ReturnData)));
+
+                        Position = new Vector2(test, Position.Y);
+                    }
                 }
                 //catch (Exception e)
                 {
@@ -113,7 +111,7 @@ namespace GruppeHessNetworkAssignment
                     //Console.WriteLine("dn " + e);
                 }
 
-            } 
+            }
 
             else
             {
@@ -126,7 +124,7 @@ namespace GruppeHessNetworkAssignment
                 }
             }
 
-         
+
 
         }
 
