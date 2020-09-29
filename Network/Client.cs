@@ -18,6 +18,7 @@ namespace GruppeHessNetworkAssignment.Network
         private UdpClient udpClient = new UdpClient(/*port*/);
 
 
+
         public Client(int port)
         {
             serverPort = port;

@@ -34,6 +34,7 @@ namespace GruppeHessNetworkAssignment
             //Get the current keyboard state
             KeyboardState keyState = Keyboard.GetState();
 
+           
             if (keyState.IsKeyDown(Keys.Left))
             {
                 //Move left if inside bounds.
@@ -55,7 +56,9 @@ namespace GruppeHessNetworkAssignment
             if (keyState.IsKeyDown(Keys.Space) && canShoot)
             {
                 // Shoot
+         
                 GameWorld.Instantiate(new Laser(new Vector2(Position.X+Asset.playerSprite.Width/2 - 5,Position.Y - 30)));
+                GameWorld.Instance.ClientInstance.Send("s");
                 canShoot = false;
                 cooldown = new TimeSpan(0, 0, 0, 0, 100);
             }
@@ -63,7 +66,9 @@ namespace GruppeHessNetworkAssignment
             // Gives the shoot function a cooldown, so the player can't shoot endlessly.
             if (keyState.IsKeyUp(Keys.Space) && cooldown <= TimeSpan.Zero)
             {
+               
                 canShoot = true;
+                
             }
 
             //If pressed a key, then we need to normalize the vector
@@ -77,13 +82,52 @@ namespace GruppeHessNetworkAssignment
 
         public override void Update(GameTime gameTime)
         {
-            HandleInput();
-            Move(gameTime);
+           
 
-            if (cooldown > TimeSpan.Zero)
+            if (GameWorld.Instance.IsServer == true)
             {
-                cooldown -= gameTime.ElapsedGameTime;
+
+                //try
+                {
+                    if (GameWorld.Instance.ServerInstance.ReturnData != null)
+                    {
+                        string serverInput = GameWorld.Instance.ServerInstance.ReturnData;
+
+                        if (serverInput == "s")
+                        {
+                            GameWorld.Instantiate(new Laser(new Vector2(Position.X + Asset.playerSprite.Width / 2 - 5, Position.Y - 30)));
+                        }
+                        else
+                        {
+                            int test = test = Convert.ToInt32(Math.Round(Convert.ToDouble(GameWorld.Instance.ServerInstance.ReturnData)));
+
+                            Position = new Vector2(test, Position.Y);
+                        }
+
+                    }
+
+                }
+                //catch (Exception e)
+                {
+
+                    //Console.WriteLine("dn " + e);
+                }
+
+            } 
+
+            else
+            {
+                HandleInput();
+                Move(gameTime);
+
+                if (cooldown > TimeSpan.Zero)
+                {
+                    cooldown -= gameTime.ElapsedGameTime;
+                }
             }
+
+         
+
         }
 
         public override void OnCollision(GameObject other)

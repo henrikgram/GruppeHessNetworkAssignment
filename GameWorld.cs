@@ -28,7 +28,7 @@ namespace GruppeHessNetworkAssignment
         private Player player;
 
         private bool startScreen = true;
-        private bool serverMode = false;
+        private bool isServer = false;
 
 
         public static GameWorld Instance
@@ -44,6 +44,9 @@ namespace GruppeHessNetworkAssignment
         }
 
         public Vector2 ScreenSize { get; private set; }
+        public bool IsServer { get => isServer; }
+        public Server ServerInstance { get => server; set => server = value; }
+        internal Client ClientInstance { get => client; set => client = value; }
 
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
@@ -89,7 +92,7 @@ namespace GruppeHessNetworkAssignment
 
                   
                     server = new Server();
-                    serverMode = true;
+                    isServer = true;
                     startScreen = false;
 
                     Console.WriteLine($"Server started on port: {server.Port} ");
@@ -105,7 +108,7 @@ namespace GruppeHessNetworkAssignment
                     client = new Client(Int32.Parse(Console.ReadLine()));
 
 
-                    serverMode = false;
+                    isServer = false;
                     startScreen = false;
 
                     //client.Send((player.Position.X).ToString());
@@ -152,15 +155,15 @@ namespace GruppeHessNetworkAssignment
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-            if (serverMode)
+            if (isServer)
             {
-                server.Send(player.Position.X.ToString());
+                //server.Send(player.Position.X.ToString());
             }
 
-            if (!serverMode)
-            {
-                client.Send(player.Position.X.ToString());
-            }
+            //if (!isServer)
+            //{
+            //    client.Send(player.Position.X.ToString());
+            //}
 
 
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))

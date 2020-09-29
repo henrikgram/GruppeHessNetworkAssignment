@@ -10,14 +10,21 @@ using System.Threading.Tasks;
 
 namespace GruppeHessNetworkAssignment.Network
 {
-    class Server
+    public class Server
     {
         private static int port = 11000;
 
         private UdpClient receivingUdpClient = new UdpClient(port);
         private UdpClient udpClient = new UdpClient();
+        string returnData;
+
+        int test;
+
+
+
 
         public int Port { get => port; }
+        public string ReturnData { get => returnData; }
 
         private IPEndPoint remoteIpEndPoint; /*= new IPEndPoint(IPAddress.Any, 0);*/
         //private IPAddress tmpIPAdress;
@@ -72,7 +79,11 @@ namespace GruppeHessNetworkAssignment.Network
                     //// Blocks until a message returns on this socket from a remote host.
                     Byte[] receiveBytes = receivingUdpClient.Receive(ref remoteIpEndPoint);
 
-                    string returnData = Encoding.ASCII.GetString(receiveBytes);
+                    returnData = Encoding.ASCII.GetString(receiveBytes);
+
+                    //test = Convert.ToInt32(Math.Round(Convert.ToDouble(returnData)));
+
+                    //Console.WriteLine($"Test: {test}");
 
                     Console.WriteLine($"Server received: {returnData}");
                     //Console.WriteLine($"Message was sent from: {RemoteIpEndPoint.Address.ToString()} \nOn port number: {RemoteIpEndPoint.Port.ToString()}");
