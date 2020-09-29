@@ -14,7 +14,8 @@ namespace GruppeHessNetworkAssignment.Network
         private static int port = 13000;
         private int serverPort;
 
-        private UdpClient udpClient = new UdpClient(port);
+        private UdpClient recievingUdpClient = new UdpClient(port);
+        private UdpClient udpClient = new UdpClient(/*port*/);
 
 
         public Client(int port)
@@ -35,8 +36,6 @@ namespace GruppeHessNetworkAssignment.Network
                 try
                 {
                     udpClient.Connect("127.0.0.1", serverPort);
-
-                    //message = "B)";
 
                     // Sends a message to the host to which you have connected.
                     Byte[] sendBytes = Encoding.ASCII.GetBytes(message);
@@ -60,7 +59,7 @@ namespace GruppeHessNetworkAssignment.Network
                 {
 
                     // Blocks until a message returns on this socket from a remote host.
-                    Byte[] receiveBytes = udpClient.Receive(ref RemoteIpEndPoint);
+                    Byte[] receiveBytes = recievingUdpClient.Receive(ref RemoteIpEndPoint);
 
                     string returnData = Encoding.ASCII.GetString(receiveBytes);
 

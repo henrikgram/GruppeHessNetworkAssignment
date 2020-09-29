@@ -154,12 +154,12 @@ namespace GruppeHessNetworkAssignment
         {
             if (serverMode)
             {
-                server.Send((player.Position.X).ToString());
+                server.Send(player.Position.X.ToString());
             }
 
             if (!serverMode)
             {
-                client.Send((player.Position.X).ToString());
+                client.Send(player.Position.X.ToString());
             }
 
 
