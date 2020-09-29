@@ -152,10 +152,6 @@ namespace GruppeHessNetworkAssignment
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-           
-
-           
-
             if (serverMode)
             {
                 server.Send((player.Position.X).ToString());

@@ -14,18 +14,14 @@ namespace GruppeHessNetworkAssignment.Network
     {
         private static int port = 11000;
 
-        private  UdpClient receivingUdpClient = new UdpClient(port);
-        private  UdpClient udpClient = new UdpClient();
+        private UdpClient receivingUdpClient = new UdpClient(port);
+        private UdpClient udpClient = new UdpClient();
 
         public int Port { get => port; }
 
         private static IPEndPoint RemoteIpEndPoint = new IPEndPoint(IPAddress.Any, 0);
 
-        private string remoteAdress;
-        //private int remotePort;
-
-
-        public Server ()
+        public Server()
         {
             Thread receivingThread = new Thread(Recieve);
             receivingThread.IsBackground = true;
@@ -46,9 +42,6 @@ namespace GruppeHessNetworkAssignment.Network
             while (GameWorld.Instance.ProgramRunning)
             {
                 RemoteIpEndPoint = new IPEndPoint(IPAddress.Any, 0);
-
-                remoteAdress = RemoteIpEndPoint.Address.ToString();
-                //remotePort = RemoteIpEndPoint.Port;
 
                 try
                 {
@@ -74,29 +67,25 @@ namespace GruppeHessNetworkAssignment.Network
         /// </summary>
         public void Send(string message)
         {
-            // Makes sure the thread keeps running until the game is closed.
-            //while (GameWorld.Instance.ProgramRunning)
+            if (RemoteIpEndPoint.Address.ToString() != "0.0.0.0")
             {
-                //tmpIPAddress = RemoteIpEndPoint.Address;
-
-                if (remoteAdress != "0.0.0.0")
+                try
                 {
-                    try
-                    {
-                        udpClient.Connect(RemoteIpEndPoint.Address, RemoteIpEndPoint.Port);
+                    //udpClient.Connect("127.0.0.1", 13000);
 
-                        //udpClient.Connect("192.168.87.130" , 13000);
+                    udpClient.Connect(RemoteIpEndPoint.Address, RemoteIpEndPoint.Port);
 
-                        //message = "Hvaså smukke pige skal du ind i mujaffas bmw?";
+                    //udpClient.Connect("192.168.87.130" , 13000);
 
-                        Byte[] sendBytes = Encoding.UTF8.GetBytes(message);
-                        udpClient.Send(sendBytes, sendBytes.Length);
-                    }
-                    catch (Exception e)
-                    {
-                        // Writes out the exception if any errors occur.
-                        Console.WriteLine(e.ToString());
-                    }
+                    //message = "Hvaså smukke pige skal du ind i mujaffas bmw?";
+
+                    Byte[] sendBytes = Encoding.UTF8.GetBytes(message);
+                    udpClient.Send(sendBytes, sendBytes.Length);
+                }
+                catch (Exception e)
+                {
+                    // Writes out the exception if any errors occur.
+                    Console.WriteLine(e.ToString());
                 }
             }
         }
