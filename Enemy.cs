@@ -11,12 +11,15 @@ namespace GruppeHessNetworkAssignment
 {
     class Enemy : GameObject
     {
-        public Enemy(Vector2 position)
+        private int nr;
+
+        public Enemy(Vector2 position, int shipID)
         {
             this.Position = position;
             velocity = new Vector2(0, 1);
             speed = 100f;
             sprite = Asset.enemySprite;
+            nr = shipID
         }
       
 

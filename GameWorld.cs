@@ -292,27 +292,12 @@ namespace GruppeHessNetworkAssignment
                     Enemy tmpEnemy = new Enemy(new Vector2(rnd.Next(0, (int)ScreenSize.X - Asset.enemySprite.Width), 0 - Asset.enemySprite.Height));
                     NewGameObjects.Add(tmpEnemy);
 
-                    server.Send("newEnemy" + tmpEnemy.Position.X);
+                    server.Send("newEnemy" + tmpEnemy.ToString());
                 }
 
                 timeTillNewInvasionForce = new TimeSpan(0, 0, 5);
             }
         }
-
-        //private void AddNewEnemyShipsClient()
-        //{
-        //    if (ClientInstance.ReturnData.Contains("newEnemy"))
-        //    {
-        //        string positionX = ClientInstance.ReturnData.TrimStart('n','e','w','E','n','e','m','y');
-        //        float posX = float.Parse(positionX);
-        //        Enemy tmpEnemy = new Enemy(new Vector2(posX, 0 - Asset.enemySprite.Height));
-        //        if (!gameObjects.Contains(tmpEnemy))
-        //        {
-        //            NewGameObjects.Add(tmpEnemy);
-        //            //ClientInstance.ReturnData = null;
-        //        }
-        //    }
-        //}
 
         private void SendEnemyShipInfoToClient()
         {

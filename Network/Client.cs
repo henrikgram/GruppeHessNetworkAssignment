@@ -81,10 +81,10 @@ namespace GruppeHessNetworkAssignment.Network
                     //                            " on their port number " +
                     //                            RemoteIpEndPoint.Port.ToString());
 
-                    if (returnData.Contains("newEnemy"))
-                    {
-                        AddNewEnemies();
-                    }
+                    //if (returnData.Contains("newEnemy"))
+                    //{
+                    //    AddNewEnemies();
+                    //}
                 }
                 catch (Exception e)
                 {
