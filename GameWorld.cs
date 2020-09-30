@@ -16,6 +16,7 @@ namespace GruppeHessNetworkAssignment
         private List<GameObject> gameObjects = new List<GameObject>();
         private static List<GameObject> newGameObjects = new List<GameObject>();
         private static List<GameObject> deletedGameObjects = new List<GameObject>();
+        //private List<Enemy> enemies = new List<Enemy>();
 
         private TimeSpan timeTillNewInvasionForce = TimeSpan.Zero;
         private Random rnd = new Random();
@@ -131,7 +132,6 @@ namespace GruppeHessNetworkAssignment
             Asset.LoadContent(Content);
 
             gameObjects.Add(player = new Player(new Vector2(ScreenSize.X/2, ScreenSize.Y-Asset.playerSprite.Height)));
-            gameObjects.Add(new Enemy(new Vector2(300, 300)));
 
             // TODO: use this.Content to load your game content here
         }
@@ -152,13 +152,16 @@ namespace GruppeHessNetworkAssignment
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-           
-
-           
-
             if (serverMode)
             {
                 server.Send((player.Position.X).ToString());
+
+                AddNewEnemyShips();
+
+                if (timeTillNewInvasionForce > TimeSpan.Zero)
+                {
+                    timeTillNewInvasionForce -= gameTime.ElapsedGameTime;
+                }
             }
 
             if (!serverMode)
@@ -194,13 +197,6 @@ namespace GruppeHessNetworkAssignment
                 {
                     gameObject.CheckCollision(other);
                 }
-            }
-
-            AddNewEnemyShips();
-
-            if (timeTillNewInvasionForce > TimeSpan.Zero)
-            {
-                timeTillNewInvasionForce -= gameTime.ElapsedGameTime;
             }
 
             // TODO: Add your update logic here
@@ -265,6 +261,16 @@ namespace GruppeHessNetworkAssignment
                 }
 
                 timeTillNewInvasionForce = new TimeSpan(0, 0, 3);
+            }
+        }
+
+        private void SendEnemyShipInfoToClient()
+        {
+            List<GameObject> enemies = (gameObjects.FindAll(e => e is Enemy));
+            for (int i = 0; i < enemies.Count; i++)
+            {
+                Enemy currentEnemy = (Enemy)enemies[i];
+                server.Send(currentEnemy.Position.ToString());
             }
         }
     }

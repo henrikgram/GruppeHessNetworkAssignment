@@ -24,7 +24,6 @@ namespace GruppeHessNetworkAssignment.Network
         private string remoteAdress;
         //private int remotePort;
 
-
         public Server ()
         {
             Thread receivingThread = new Thread(Recieve);
