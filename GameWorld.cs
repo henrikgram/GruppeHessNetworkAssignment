@@ -15,8 +15,8 @@ namespace GruppeHessNetworkAssignment
     public class GameWorld : Game
     {
         private List<GameObject> gameObjects = new List<GameObject>();
-        private static List<GameObject> newGameObjects = new List<GameObject>();
-        private static List<GameObject> deletedGameObjects = new List<GameObject>();
+        private  List<GameObject> newGameObjects = new List<GameObject>();
+        private  List<GameObject> deletedGameObjects = new List<GameObject>();
 
         private TimeSpan timeTillNewInvasionForce = TimeSpan.Zero;
         private Random rnd = new Random(500);
@@ -31,6 +31,10 @@ namespace GruppeHessNetworkAssignment
         private bool isServer = false;
         private byte maxPlayers = 1;
 
+        private int objectID = 0;
+
+        bool test = true;
+
         public byte PlayerCount { get; set; } = 0;
         public bool ProgramRunning { get; set; } = true;
 
@@ -39,7 +43,7 @@ namespace GruppeHessNetworkAssignment
         {
             get
             {
-                if(instance == null)
+                if (instance == null)
                 {
                     instance = new GameWorld();
                 }
@@ -51,6 +55,9 @@ namespace GruppeHessNetworkAssignment
         public bool IsServer { get => isServer; }
         public Server ServerInstance { get => server; set => server = value; }
         internal Client ClientInstance { get => client; set => client = value; }
+        public int ObjectID { get => objectID++; set => objectID = value; }
+        public List<GameObject> GameObjects { get => gameObjects; set => gameObjects = value; }
+        public  List<GameObject> NewGameObjects { get => newGameObjects; set => newGameObjects = value; }
 
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
@@ -71,6 +78,7 @@ namespace GruppeHessNetworkAssignment
         {
             ServerClientSetup();
 
+            IsMouseVisible = true;
             // CHANGES THE SCREEN SIZE.
             graphics.PreferredBackBufferHeight = screenHeight;
             graphics.ApplyChanges();
@@ -94,7 +102,6 @@ namespace GruppeHessNetworkAssignment
                 {
                     // Instantiates the server, if the game starts in server mode.
 
-                  
                     server = new Server();
                     isServer = true;
                     startScreen = false;
@@ -118,6 +125,7 @@ namespace GruppeHessNetworkAssignment
                     //client.Send((player.Position.X).ToString());
                 }
 
+
                 else
                 {
                     Console.WriteLine("Invalid input.");
@@ -137,10 +145,10 @@ namespace GruppeHessNetworkAssignment
 
             Asset.LoadContent(Content);
 
-            gameObjects.Add(player = new Player(new Vector2(ScreenSize.X/2, ScreenSize.Y-Asset.playerSprite.Height)));
-            gameObjects.Add(new Enemy(new Vector2(300, 300)));
+            gameObjects.Add(player = new Player(new Vector2(ScreenSize.X / 2, ScreenSize.Y - Asset.playerSprite.Height)));
 
-            // TODO: use this.Content to load your game content here
+
+           
         }
 
         /// <summary>
@@ -149,7 +157,7 @@ namespace GruppeHessNetworkAssignment
         /// </summary>
         protected override void UnloadContent()
         {
-            // TODO: Unload any non ContentManager content here
+
         }
 
         /// <summary>
@@ -159,45 +167,108 @@ namespace GruppeHessNetworkAssignment
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-            //if (IsServer && ServerInstance.ReturnData == "P")
-            //{
-            //    PlayerCount++;
-            //}
 
-            //if (PlayerCount == maxPlayers)
-            //{
-                //For two player, so the server can send a pos back to the client.
-                //if (isServer)
+          
+
+            // Makes sure the client sends the player's opdated position to the server.
+            if (!isServer)
+            {
+                //sending position to the server
+                client.Send(player.Position.X.ToString());
+
+                ////sending position to the server
+                //client.Send(player.Position.X.ToString());
+
+                ////saves the recieved message from server
+                //string input = ClientInstance.ReturnData;
+
+
+                ////makes sure to only work with Object position strings
+                //if (input.Contains("OP"))
                 //{
-                //    server.Send(player.Position.X.ToString());
+                //    //removes the "OP" tag
+                //    input = input.Remove(0, 2);
+
+                //    //splitting the string into multiple object strings
+                //    string[] inputObjects = input.Split('|');
+
+
+                //    //add new object if the amount is not the same
+                //    if (gameObjects.Count - 1 < inputObjects.Length - 1)
+                //    {
+                //        for (int i = 0; i != inputObjects.Length-1; i++)
+                //        {
+                //            string[] inputParameters = inputObjects[i].Split(',');
+
+                //            int tmpx  = Int32.Parse(inputParameters[0]);
+                //            int tmpy  = Int32.Parse(inputParameters[1]);
+                //            int tmpID = Int32.Parse(inputParameters[2]);
+                //            string objectType = inputParameters[3];
+
+                //            switch (objectType)
+                //            {
+                //                case ("Enemy"):
+                //                    newGameObjects.Add(new Enemy(new Vector2(tmpx, tmpy), tmpID));
+                //                    break;
+
+                //                //case ("Laser"):
+                //                //    newGameObjects.Add(new Laser(new Vector2(tmpx, tmpy), tmpID));
+                //                //    break;
+                //            }
+
+                //        }
+                //    }
+
+                //    else
+                //    {
+                //        //update object
+
+                //        for (int i = 0; i < inputObjects.Length-1; i++)
+                //        {
+                //            string[] inputParameters = inputObjects[i].Split(',');
+
+                //            int tmpx = Int32.Parse(inputParameters[0]);
+                //            int tmpy = Int32.Parse(inputParameters[1]);
+                //            int tmpID = Int32.Parse(inputParameters[2]);
+
+                //            foreach (GameObject gameObject in gameObjects)
+                //            {
+                //                if (gameObject.Id == tmpID)
+                //                {
+                //                    gameObject.Position = new Vector2(tmpx,tmpy);
+                //                }
+                //            }
+                //        }
+                //    }
+
+                //    //Console.WriteLine(inputObjects.Length);
                 //}
+            }
 
-                // Makes sure the client sends the player's opdated position to the server.
-                if (!isServer)
-                {
-                    client.Send(player.Position.X.ToString());
-                }
+            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
+            {
+                // Makes sure all the threads stop running.
+                ProgramRunning = false;
+                Exit();
+            }
 
-                if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
-                {
-                    // Makes sure all the threads stop running.
-                    ProgramRunning = false;
-                    Exit();
-                }
+            //ads all objects in list-newobjects to list-gameobjects.
+            gameObjects.AddRange(newGameObjects);
 
-                //ads all objects in list-newobjects to list-gameobjects.
-                gameObjects.AddRange(newGameObjects);
+            foreach (GameObject deletedObject in deletedGameObjects)
+            {
+                gameObjects.Remove(deletedObject);
+            }
 
-                foreach (GameObject deletedObject in deletedGameObjects)
-                {
-                    gameObjects.Remove(deletedObject);
-                }
+            //deletes objects in list-deleteobjects.
+            deletedGameObjects.Clear();
+            //deletes objects in list-newobjects.
+            newGameObjects.Clear();
 
-                //deletes objects in list-deleteobjects.
-                deletedGameObjects.Clear();
-                //deletes objects in list-newobjects.
-                newGameObjects.Clear();
+            player.Update(gameTime);
 
+            if (isServer)
+            {
                 foreach (GameObject gameObject in gameObjects)
                 {
                     gameObject.Update(gameTime);
@@ -207,17 +278,45 @@ namespace GruppeHessNetworkAssignment
                         gameObject.CheckCollision(other);
                     }
                 }
+            }
+        
 
-                AddNewEnemyShips();
 
-                if (timeTillNewInvasionForce > TimeSpan.Zero)
+            if (timeTillNewInvasionForce > TimeSpan.Zero)
+            {
+                timeTillNewInvasionForce -= gameTime.ElapsedGameTime;
+            }
+
+            if (IsServer)
+            {
+                if (test)
                 {
-                    timeTillNewInvasionForce -= gameTime.ElapsedGameTime;
+                    newGameObjects.Add(new Enemy(new Vector2(500, 0)));
+                    test = false;
                 }
 
-                // TODO: Add your update logic here
+                AddNewEnemyShips(1);
 
-                base.Update(gameTime);
+                string output = "OP";
+
+                foreach (GameObject gameObject in gameObjects)
+                {
+                    if (gameObject.GetType().Name == "Player")
+                    {
+                        continue;
+                    }
+
+                    output += ($"{(int)gameObject.Position.X},{(int)gameObject.Position.Y},{gameObject.Id},{gameObject.GetType().Name}|");
+
+                }
+                
+
+                server.Send(output);
+            }
+
+
+
+            base.Update(gameTime);
             //}           
         }
 
@@ -230,7 +329,7 @@ namespace GruppeHessNetworkAssignment
             GraphicsDevice.Clear(Color.Black);
 
             spriteBatch.Begin();
-            // TODO: Add your drawing code here
+
             foreach (GameObject gameObject in gameObjects)
             {
                 gameObject.Draw(spriteBatch);
@@ -242,12 +341,14 @@ namespace GruppeHessNetworkAssignment
             base.Draw(gameTime);
         }
 
-        public static void Instantiate(GameObject gameObject)
+       
+
+        public  void Instantiate(GameObject gameObject)
         {
             newGameObjects.Add(gameObject);
         }
 
-        public static void Destroy(GameObject gameObject)
+        public  void Destroy(GameObject gameObject)
         {
             deletedGameObjects.Add(gameObject);
         }
@@ -268,11 +369,11 @@ namespace GruppeHessNetworkAssignment
             spriteBatch.Draw(Asset.collisionBox, leftLine, null, Color.Red, 0, Vector2.Zero, SpriteEffects.None, 1);
         }
 
-        private void AddNewEnemyShips()
+        private void AddNewEnemyShips(int amount)
         {
             if (timeTillNewInvasionForce <= TimeSpan.Zero)
             {
-                for (int i = 0; i < 5; i++)
+                for (int i = 0; i < amount; i++)
                 {
                     newGameObjects.Add(new Enemy(new Vector2(rnd.Next(0, (int)ScreenSize.X - Asset.enemySprite.Width), 0 - Asset.enemySprite.Height)));
                 }

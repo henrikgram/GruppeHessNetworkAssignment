@@ -15,10 +15,19 @@ namespace GruppeHessNetworkAssignment
         {
             this.Position = position;
             velocity = new Vector2(0, 1);
-            speed = 100f;
+            speed = 30f;
             sprite = Asset.enemySprite;
         }
-      
+
+        public Enemy(Vector2 position, int ID)
+        {
+            this.Position = position;
+            velocity = new Vector2(0, 1);
+            speed = 10f;
+            sprite = Asset.enemySprite;
+            base.Id = Id;
+        }
+
 
         public override void OnCollision(GameObject other)
         {

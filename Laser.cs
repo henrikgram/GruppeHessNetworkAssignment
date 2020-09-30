@@ -18,14 +18,24 @@ namespace GruppeHessNetworkAssignment
             speed = 300f;
             sprite = Asset.laserSprite;
         }
-        
+
+        public Laser(Vector2 position, int iD)
+        {
+            this.Position = position;
+            velocity = new Vector2(0, -1);
+            speed = 300f;
+            sprite = Asset.laserSprite;
+
+            base.Id = iD;
+        }
+
         public override void OnCollision(GameObject other)
         {
             if (other is Enemy)
             {
                 // Destroys the laser and the enemy once collision between aforementioned GameObjects happens.
-                GameWorld.Destroy(other);
-                GameWorld.Destroy(this);
+                GameWorld.Instance.Destroy(other);
+                GameWorld.Instance.Destroy(this);
             }
         }
 

@@ -52,6 +52,7 @@
     <Compile Include="Laser.cs" />
     <Compile Include="Network\Client.cs" />
     <Compile Include="Network\Server.cs" />
+    <Compile Include="Packet.cs" />
     <Compile Include="Player.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

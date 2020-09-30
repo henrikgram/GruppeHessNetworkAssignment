@@ -17,6 +17,8 @@ namespace GruppeHessNetworkAssignment
         protected Vector2 velocity;
         protected float speed;
 
+        public int Id = GameWorld.Instance.ObjectID;
+
         public virtual Rectangle CollisionBox
         {
             get

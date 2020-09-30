@@ -55,7 +55,7 @@ namespace GruppeHessNetworkAssignment
             if (keyState.IsKeyDown(Keys.Space) && canShoot)
             {
                 // Shoot        
-                GameWorld.Instantiate(new Laser(new Vector2(Position.X + Asset.playerSprite.Width / 2 - 5, Position.Y - 30)));
+                GameWorld.Instance.Instantiate(new Laser(new Vector2(Position.X + Asset.playerSprite.Width / 2 - 5, Position.Y - 30)));
                 // Client sends a message to the server, so the server knows to shoot from the player as well.
                 GameWorld.Instance.ClientInstance.Send("s");
                 // Two next functions make sure shoot has a cool down.
@@ -92,7 +92,7 @@ namespace GruppeHessNetworkAssignment
 
                     if (serverInput == "s")
                     {
-                        GameWorld.Instantiate(new Laser(new Vector2(Position.X + Asset.playerSprite.Width / 2 - 5, Position.Y - 30)));
+                        GameWorld.Instance.Instantiate(new Laser(new Vector2(Position.X + Asset.playerSprite.Width / 2 - 5, Position.Y - 30)));
                     }
                     //else if (serverInput == "P")
                     //{

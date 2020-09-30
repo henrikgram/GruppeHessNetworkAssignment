@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Xna.Framework;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -17,7 +18,8 @@ namespace GruppeHessNetworkAssignment.Network
         private UdpClient recievingUdpClient = new UdpClient(port);
         private UdpClient udpClient = new UdpClient(/*port*/);
 
-
+        private string returnData;
+        public string ReturnData { get => returnData; }
 
         public Client(int port)
         {
@@ -53,6 +55,8 @@ namespace GruppeHessNetworkAssignment.Network
             }
         }
 
+
+
         public void Receive()
         {
             // This bool becomes false when the player exits the game.
@@ -66,19 +70,91 @@ namespace GruppeHessNetworkAssignment.Network
                     // Blocks until a message returns on this socket from a remote host.
                     Byte[] receiveBytes = recievingUdpClient.Receive(ref RemoteIpEndPoint);
 
-                    string returnData = Encoding.ASCII.GetString(receiveBytes);
+                    returnData = Encoding.ASCII.GetString(receiveBytes);
 
-                    Console.WriteLine("Client received: " +
-                                              returnData.ToString());
+                    //Console.WriteLine("Client received: " + returnData.ToString());
                     //Console.WriteLine("This message was sent from " +
                     //                            RemoteIpEndPoint.Address.ToString() +
                     //                            " on their port number " +
                     //                            RemoteIpEndPoint.Port.ToString());
+
+                    UpdateAccordingToServer();
                 }
                 catch (Exception e)
                 {
                     Console.WriteLine(e.ToString());
                 }
+            }
+        }
+
+        public void UpdateAccordingToServer()
+        {
+            ////sending position to the server
+            //client.Send(player.Position.X.ToString());
+
+            //saves the recieved message from server
+            string input = ReturnData;
+
+
+            //makes sure to only work with Object position strings
+            if (input.Contains("OP"))
+            {
+                //removes the "OP" tag
+                input = input.Remove(0, 2);
+
+                //splitting the string into multiple object strings
+                string[] inputObjects = input.Split('|');
+
+
+                //add new object if the amount is not the same
+                if (GameWorld.Instance.GameObjects.Count - 1 < inputObjects.Length - 1)
+                {
+                    for (int i = 0; i != inputObjects.Length - 1; i++)
+                    {
+                        string[] inputParameters = inputObjects[i].Split(',');
+
+                        int tmpx =  Int32.Parse(inputParameters[0]);
+                        int tmpy =  Int32.Parse(inputParameters[1]);
+                        int tmpID = Int32.Parse(inputParameters[2]);
+                        string objectType = inputParameters[3];
+
+                        switch (objectType)
+                        {
+                            case ("Enemy"):
+                                GameWorld.Instance.NewGameObjects.Add(new Enemy(new Vector2(tmpx, tmpy), tmpID));
+                                break;
+
+                                //case ("Laser"):
+                                //    newGameObjects.Add(new Laser(new Vector2(tmpx, tmpy), tmpID));
+                                //    break;
+                        }
+
+                    }
+                }
+
+                else
+                {
+                    //update object
+
+                    for (int i = 0; i < inputObjects.Length - 1; i++)
+                    {
+                        string[] inputParameters = inputObjects[i].Split(',');
+
+                        int tmpx = Int32.Parse(inputParameters[0]);
+                        int tmpy = Int32.Parse(inputParameters[1]);
+                        int tmpID = Int32.Parse(inputParameters[2]);
+
+                        foreach (GameObject gameObject in GameWorld.Instance.GameObjects)
+                        {
+                            if (gameObject.Id == tmpID)
+                            {
+                                gameObject.Position = new Vector2(tmpx, tmpy);
+                            }
+                        }
+                    }
+                }
+
+                //Console.WriteLine(inputObjects.Length);
             }
         }
     }
