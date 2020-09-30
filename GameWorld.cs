@@ -32,6 +32,9 @@ namespace GruppeHessNetworkAssignment
         private bool isServer = false;
         private byte maxPlayers = 1;
 
+        private int wave = 0;
+
+
         public byte PlayerCount { get; set; } = 0;
         public bool ProgramRunning { get; set; } = true;
 
@@ -289,12 +292,12 @@ namespace GruppeHessNetworkAssignment
             {
                 for (int i = 0; i < 5; i++)
                 {
-                    Enemy tmpEnemy = new Enemy(new Vector2(rnd.Next(0, (int)ScreenSize.X - Asset.enemySprite.Width), 0 - Asset.enemySprite.Height));
+                    Enemy tmpEnemy = new Enemy(new Vector2(rnd.Next(0, (int)ScreenSize.X - Asset.enemySprite.Width), 0 - Asset.enemySprite.Height), wave+i);
                     NewGameObjects.Add(tmpEnemy);
 
-                    server.Send("newEnemy" + tmpEnemy.ToString());
+                    server.Send("newEnemy" + tmpEnemy.ID + "ID" + tmpEnemy.Position.X);
                 }
-
+                wave++;
                 timeTillNewInvasionForce = new TimeSpan(0, 0, 5);
             }
         }

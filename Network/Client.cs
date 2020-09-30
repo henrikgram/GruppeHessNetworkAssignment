@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -81,10 +82,10 @@ namespace GruppeHessNetworkAssignment.Network
                     //                            " on their port number " +
                     //                            RemoteIpEndPoint.Port.ToString());
 
-                    //if (returnData.Contains("newEnemy"))
-                    //{
-                    //    AddNewEnemies();
-                    //}
+                    if (returnData.Contains("newEnemy"))
+                    {
+                        AddNewEnemies();
+                    }
                 }
                 catch (Exception e)
                 {
@@ -97,7 +98,9 @@ namespace GruppeHessNetworkAssignment.Network
         {
             string positionX = returnData.TrimStart('n', 'e', 'w', 'E', 'n', 'e', 'm', 'y');
             float posX = float.Parse(positionX);
-            Enemy tmpEnemy = new Enemy(new Vector2(posX, 0 - Asset.enemySprite.Height));
+            string stringiD = Regex.Match(returnData, @"\d+").Value;
+            int iD = Int32.Parse(stringiD);
+            Enemy tmpEnemy = new Enemy(new Vector2(posX, 0 - Asset.enemySprite.Height), iD);
             GameWorld.Instance.NewGameObjects.Add(tmpEnemy);
             //ClientInstance.ReturnData = null;
         }
