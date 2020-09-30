@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Xna.Framework;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -16,8 +17,13 @@ namespace GruppeHessNetworkAssignment.Network
 
         private UdpClient recievingUdpClient = new UdpClient(port);
         private UdpClient udpClient = new UdpClient(/*port*/);
+        private string returnData;
 
-
+        public string ReturnData
+        {
+            get { return returnData; }
+            set { returnData = value; }
+        }
 
         public Client(int port)
         {
@@ -66,7 +72,7 @@ namespace GruppeHessNetworkAssignment.Network
                     // Blocks until a message returns on this socket from a remote host.
                     Byte[] receiveBytes = recievingUdpClient.Receive(ref RemoteIpEndPoint);
 
-                    string returnData = Encoding.ASCII.GetString(receiveBytes);
+                    returnData = Encoding.ASCII.GetString(receiveBytes);
 
                     Console.WriteLine("Client received: " +
                                               returnData.ToString());
@@ -74,12 +80,26 @@ namespace GruppeHessNetworkAssignment.Network
                     //                            RemoteIpEndPoint.Address.ToString() +
                     //                            " on their port number " +
                     //                            RemoteIpEndPoint.Port.ToString());
+
+                    if (returnData.Contains("newEnemy"))
+                    {
+                        AddNewEnemies();
+                    }
                 }
                 catch (Exception e)
                 {
                     Console.WriteLine(e.ToString());
                 }
             }
+        }
+
+        private void AddNewEnemies()
+        {
+            string positionX = returnData.TrimStart('n', 'e', 'w', 'E', 'n', 'e', 'm', 'y');
+            float posX = float.Parse(positionX);
+            Enemy tmpEnemy = new Enemy(new Vector2(posX, 0 - Asset.enemySprite.Height));
+            GameWorld.Instance.NewGameObjects.Add(tmpEnemy);
+            //ClientInstance.ReturnData = null;
         }
     }
 }

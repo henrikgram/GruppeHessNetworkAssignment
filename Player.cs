@@ -55,7 +55,7 @@ namespace GruppeHessNetworkAssignment
             if (keyState.IsKeyDown(Keys.Space) && canShoot)
             {
                 // Shoot        
-                GameWorld.Instantiate(new Laser(new Vector2(Position.X + Asset.playerSprite.Width / 2 - 5, Position.Y - 30)));
+                GameWorld.Instance.Instantiate(new Laser(new Vector2(Position.X + Asset.playerSprite.Width / 2 - 5, Position.Y - 30)));
                 // Client sends a message to the server, so the server knows to shoot from the player as well.
                 GameWorld.Instance.ClientInstance.Send("s");
                 // Two next functions make sure shoot has a cool down.
@@ -81,6 +81,15 @@ namespace GruppeHessNetworkAssignment
 
         public override void Update(GameTime gameTime)
         {
+            if (GameWorld.Instance.IsServer == false && GameWorld.Instance.ClientInstance.ReturnData != null)
+            {
+                string serverInput = GameWorld.Instance.ClientInstance.ReturnData;
+
+                if (serverInput.StartsWith("e"))
+                {
+                    Console.WriteLine(serverInput);
+                }
+            }
 
 
             if (GameWorld.Instance.IsServer == true && GameWorld.Instance.ServerInstance.ReturnData != null)
@@ -92,15 +101,19 @@ namespace GruppeHessNetworkAssignment
 
                     if (serverInput == "s")
                     {
-                        GameWorld.Instantiate(new Laser(new Vector2(Position.X + Asset.playerSprite.Width / 2 - 5, Position.Y - 30)));
+                        GameWorld.Instance.Instantiate(new Laser(new Vector2(Position.X + Asset.playerSprite.Width / 2 - 5, Position.Y - 30)));
                     }
                     //else if (serverInput == "P")
                     //{
 
                     //}
+                    else if (serverInput.StartsWith("n"))
+                    {
+
+                    }
                     else
                     {
-                        int test = test = Convert.ToInt32(Math.Round(Convert.ToDouble(GameWorld.Instance.ServerInstance.ReturnData)));
+                        int test = Convert.ToInt32(Math.Round(Convert.ToDouble(GameWorld.Instance.ServerInstance.ReturnData)));
 
                         Position = new Vector2(test, Position.Y);
                     }
