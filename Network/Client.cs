@@ -106,8 +106,6 @@ namespace GruppeHessNetworkAssignment.Network
             string objectType = inputParameters[1];
             int tmpID = Int32.Parse(inputParameters[2]);
             int tmpx = Int32.Parse(inputParameters[3]);
-            //int tmpy = Int32.Parse(inputParameters[1]);
-            //ClientInstance.ReturnData = null;
 
             switch (objectType)
             {
@@ -131,11 +129,15 @@ namespace GruppeHessNetworkAssignment.Network
             int tmpy = Int32.Parse(inputParameters[4]);
 
             Enemy tmpEnemy = (Enemy)GameWorld.Instance.GameObjects.Find(e => e.ID == tmpID);
-            if (tmpEnemy != null)
+            if (tmpEnemy != null && tmpEnemy.Position != new Vector2(tmpx,tmpy))
             {
                 tmpEnemy.Position = new Vector2(tmpx, tmpy);
-                Console.WriteLine("Here!");
             }
+        }
+
+        private void DeleteEnemiesAccordingToServer()
+        {
+
         }
     }
 }
