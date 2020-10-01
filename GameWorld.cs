@@ -76,6 +76,7 @@ namespace GruppeHessNetworkAssignment
         /// </summary>
         protected override void Initialize()
         {
+            Asset.LoadContent(Content);
             ServerClientSetup();
 
             IsMouseVisible = true;
@@ -143,7 +144,7 @@ namespace GruppeHessNetworkAssignment
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            Asset.LoadContent(Content);
+            //Asset.LoadContent(Content);
 
             gameObjects.Add(player = new Player(new Vector2(ScreenSize.X / 2, ScreenSize.Y - Asset.playerSprite.Height)));
 
@@ -299,22 +300,20 @@ namespace GruppeHessNetworkAssignment
 
                 string output = "OP";
 
-                foreach (GameObject gameObject in gameObjects)
+                //foreach (GameObject gameObject in gameObjects)
+                for (int i = 0; i < gameObjects.Count; i++)
                 {
-                    if (gameObject.GetType().Name == "Player")
+                    if (gameObjects[i].GetType().Name == "Player")
                     {
                         continue;
                     }
 
-                    output += ($"{(int)gameObject.Position.X},{(int)gameObject.Position.Y},{gameObject.Id},{gameObject.GetType().Name}|");
+                    output += ($"{(int)gameObjects[i].Position.X},{(int)gameObjects[i].Position.Y},{gameObjects[i].Id},{gameObjects[i].GetType().Name}");
 
+                    server.Send(output);
                 }
-                
-
-                server.Send(output);
+                //server.Send(output);
             }
-
-
 
             base.Update(gameTime);
             //}           

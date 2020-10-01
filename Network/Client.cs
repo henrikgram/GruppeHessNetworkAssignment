@@ -103,15 +103,16 @@ namespace GruppeHessNetworkAssignment.Network
                 input = input.Remove(0, 2);
 
                 //splitting the string into multiple object strings
-                string[] inputObjects = input.Split('|');
+                //string[] inputObjects = input.Split('|');
 
 
                 //add new object if the amount is not the same
-                if (GameWorld.Instance.GameObjects.Count - 1 < inputObjects.Length - 1)
+                //if (GameWorld.Instance.GameObjects.Count - 1 < inputObjects.Length - 1)
                 {
-                    for (int i = 0; i != inputObjects.Length - 1; i++)
+                    //for (int i = 0; i != inputObjects.Length - 1; i++)
                     {
-                        string[] inputParameters = inputObjects[i].Split(',');
+                        //string[] inputParameters = inputObjects[i].Split(',');
+                        string[] inputParameters = input.Split(',');
 
                         int tmpx =  Int32.Parse(inputParameters[0]);
                         int tmpy =  Int32.Parse(inputParameters[1]);
@@ -132,27 +133,28 @@ namespace GruppeHessNetworkAssignment.Network
                     }
                 }
 
-                else
-                {
-                    //update object
+                //else
+                //{
+                //    //update object
 
-                    for (int i = 0; i < inputObjects.Length - 1; i++)
-                    {
-                        string[] inputParameters = inputObjects[i].Split(',');
+                //    for (int i = 0; i < inputObjects.Length - 1; i++)
+                //    {
+                //        string[] inputParameters = inputObjects[i].Split(',');
 
-                        int tmpx = Int32.Parse(inputParameters[0]);
-                        int tmpy = Int32.Parse(inputParameters[1]);
-                        int tmpID = Int32.Parse(inputParameters[2]);
+                //        int tmpx = Int32.Parse(inputParameters[0]);
+                //        int tmpy = Int32.Parse(inputParameters[1]);
+                //        int tmpID = Int32.Parse(inputParameters[2]);
 
-                        foreach (GameObject gameObject in GameWorld.Instance.GameObjects)
-                        {
-                            if (gameObject.Id == tmpID)
-                            {
-                                gameObject.Position = new Vector2(tmpx, tmpy);
-                            }
-                        }
-                    }
-                }
+                //        //foreach (GameObject gameObject in GameWorld.Instance.GameObjects)
+                //        for (int j = 0; j < GameWorld.Instance.GameObjects.Count; j++)
+                //        {
+                //            if (GameWorld.Instance.GameObjects[j].Id == tmpID)
+                //            {
+                //                GameWorld.Instance.GameObjects[j].Position = new Vector2(tmpx, tmpy);
+                //            }
+                //        }
+                //    }
+                //}
 
                 //Console.WriteLine(inputObjects.Length);
             }
