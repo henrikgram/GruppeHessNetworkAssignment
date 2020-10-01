@@ -96,12 +96,15 @@ namespace GruppeHessNetworkAssignment.Network
 
         private void AddNewEnemies()
         {
-            string positionX = returnData.TrimStart('n', 'e', 'w', 'E', 'n', 'e', 'm', 'y');
-            float posX = float.Parse(positionX);
-            string stringiD = Regex.Match(returnData, @"\d+").Value;
-            int iD = Int32.Parse(stringiD);
-            Enemy tmpEnemy = new Enemy(new Vector2(posX, 0 - Asset.enemySprite.Height), iD);
-            GameWorld.Instance.NewGameObjects.Add(tmpEnemy);
+            //string positionX = returnData.TrimStart('n', 'e', 'w', 'E', 'n', 'e', 'm', 'y');
+            //float posX = float.Parse(positionX);
+            //string stringiD = Regex.Match(returnData, @"\d+").Value;
+            //int iD = Int32.Parse(stringiD);
+            //Enemy tmpEnemy = new Enemy(new Vector2(posX, 0 - Asset.enemySprite.Height), iD);
+            //GameWorld.Instance.NewGameObjects.Add(tmpEnemy);
+
+            string[] input = returnData.Split(',');
+
             //ClientInstance.ReturnData = null;
         }
     }

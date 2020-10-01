@@ -295,7 +295,7 @@ namespace GruppeHessNetworkAssignment
                     Enemy tmpEnemy = new Enemy(new Vector2(rnd.Next(0, (int)ScreenSize.X - Asset.enemySprite.Width), 0 - Asset.enemySprite.Height), wave+i);
                     NewGameObjects.Add(tmpEnemy);
 
-                    server.Send("newEnemy" + tmpEnemy.ID + "ID" + tmpEnemy.Position.X);
+                    server.Send("newEnemy," + tmpEnemy.ID + ",ID," + tmpEnemy.Position.X);
                 }
                 wave++;
                 timeTillNewInvasionForce = new TimeSpan(0, 0, 5);
