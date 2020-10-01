@@ -81,10 +81,15 @@ namespace GruppeHessNetworkAssignment.Network
                     //                            RemoteIpEndPoint.Address.ToString() +
                     //                            " on their port number " +
                     //                            RemoteIpEndPoint.Port.ToString());
-
-                    if (returnData.Contains("newEnemy"))
+                    
+                    if (returnData.Contains("New,Enemy"))
                     {
                         AddNewEnemies();
+                    }
+
+                    if (returnData.Contains("Update,Enemy,"))
+                    {
+                        UpdateCurrentEnemies();
                     }
                 }
                 catch (Exception e)
@@ -96,16 +101,41 @@ namespace GruppeHessNetworkAssignment.Network
 
         private void AddNewEnemies()
         {
-            //string positionX = returnData.TrimStart('n', 'e', 'w', 'E', 'n', 'e', 'm', 'y');
-            //float posX = float.Parse(positionX);
-            //string stringiD = Regex.Match(returnData, @"\d+").Value;
-            //int iD = Int32.Parse(stringiD);
-            //Enemy tmpEnemy = new Enemy(new Vector2(posX, 0 - Asset.enemySprite.Height), iD);
-            //GameWorld.Instance.NewGameObjects.Add(tmpEnemy);
+            string[] inputParameters = returnData.Split(',');
 
-            string[] input = returnData.Split(',');
-
+            string objectType = inputParameters[1];
+            int tmpID = Int32.Parse(inputParameters[2]);
+            int tmpx = Int32.Parse(inputParameters[3]);
+            //int tmpy = Int32.Parse(inputParameters[1]);
             //ClientInstance.ReturnData = null;
+
+            switch (objectType)
+            {
+                case ("Enemy"):
+                    GameWorld.Instance.NewGameObjects.Add(new Enemy(new Vector2(tmpx, 0-Asset.enemySprite.Height), tmpID));
+                    break;
+
+                    //case ("Laser"):
+                    //    newGameObjects.Add(new Laser(new Vector2(tmpx, tmpy), tmpID));
+                    //    break;
+            }
+        }
+
+        private void UpdateCurrentEnemies()
+        {
+            string[] inputParameters = returnData.Split(',');
+
+            string objectType = inputParameters[1];
+            int tmpID = Int32.Parse(inputParameters[2]);
+            int tmpx = Int32.Parse(inputParameters[3]);
+            int tmpy = Int32.Parse(inputParameters[4]);
+
+            Enemy tmpEnemy = (Enemy)GameWorld.Instance.GameObjects.Find(e => e.ID == tmpID);
+            if (tmpEnemy != null)
+            {
+                tmpEnemy.Position = new Vector2(tmpx, tmpy);
+                Console.WriteLine("Here!");
+            }
         }
     }
 }

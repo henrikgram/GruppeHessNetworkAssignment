@@ -11,9 +11,7 @@ namespace GruppeHessNetworkAssignment
 {
     class Enemy : GameObject
     {
-        private int iD;
-
-        public int ID { get => iD; }
+        //private int iD;
 
         public Enemy(Vector2 position, int shipID)
         {
@@ -21,7 +19,7 @@ namespace GruppeHessNetworkAssignment
             velocity = new Vector2(0, 1);
             speed = 100f;
             sprite = Asset.enemySprite;
-            iD = shipID;
+            this.ID = shipID;
         }
       
 
