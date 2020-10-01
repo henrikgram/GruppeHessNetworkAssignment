@@ -78,6 +78,11 @@ namespace GruppeHessNetworkAssignment.Network
 
                     returnData = Encoding.ASCII.GetString(receiveBytes);
 
+                    if (returnData.StartsWith("Destroy"))
+                    {
+                        DeleteEnemiesAccordingToClient();
+                    }
+
                     //test = Convert.ToInt32(Math.Round(Convert.ToDouble(returnData)));
 
                     //Console.WriteLine($"Test: {test}");
@@ -91,6 +96,19 @@ namespace GruppeHessNetworkAssignment.Network
                     // Writes out the exception if any errors occur.
                     Console.WriteLine(e.ToString());
                 }
+            }
+        }
+
+        private void DeleteEnemiesAccordingToClient()
+        {
+            string[] inputParameters = returnData.Split(',');
+
+            int tmpID = Int32.Parse(inputParameters[1]);
+
+            GameObject destroyedObject = (Enemy)GameWorld.Instance.GameObjects.Find(o => o.ID == tmpID);
+            if (destroyedObject != null)
+            {
+                GameWorld.Instance.Destroy(destroyedObject);
             }
         }
     }

@@ -54,10 +54,11 @@ namespace GruppeHessNetworkAssignment
 
             if (keyState.IsKeyDown(Keys.Space) && canShoot)
             {
-                // Shoot        
-                GameWorld.Instance.Instantiate(new Laser(new Vector2(Position.X + Asset.playerSprite.Width / 2 - 5, Position.Y - 30)));
+                // Shoot
+                Laser newLaser = new Laser(new Vector2(Position.X + Asset.playerSprite.Width / 2 - 5, Position.Y - 30));
+                //GameWorld.Instance.ClientInstance.Send("Shoot,Player," + newLaser.ID + "," + newLaser.Position.X + "," + newLaser.Position.Y);
+                GameWorld.Instance.Instantiate(newLaser);
                 // Client sends a message to the server, so the server knows to shoot from the player as well.
-                GameWorld.Instance.ClientInstance.Send("s");
                 // Two next functions make sure shoot has a cool down.
                 canShoot = false;
                 cooldown = new TimeSpan(0, 0, 0, 0, 100);
@@ -99,21 +100,27 @@ namespace GruppeHessNetworkAssignment
                 {
                     string serverInput = GameWorld.Instance.ServerInstance.ReturnData;
 
-                    if (serverInput == "s")
-                    {
-                        GameWorld.Instance.Instantiate(new Laser(new Vector2(Position.X + Asset.playerSprite.Width / 2 - 5, Position.Y - 30)));
-                    }
-                    //else if (serverInput == "P")
+                    //if (serverInput.StartsWith("Shoot,Player"))
                     //{
+                    //    string[] inputParameters = serverInput.Split(',');
 
+                    //    int tmpID = Int32.Parse(inputParameters[2]);
+                    //    int tmpX = Int32.Parse(inputParameters[3]);
+                    //    int tmpY = Int32.Parse(inputParameters[4]);
+
+                    //    Laser newLaser = new Laser(new Vector2(tmpX + tmpY));
+
+                    //    GameWorld.Instance.Instantiate(newLaser);
+
+                    //    newLaser.ID = tmpID;
                     //}
-                    else if (serverInput.StartsWith("n"))
+                    if (serverInput.Contains("Player,Position"))
                     {
+                        string[] inputParameters = serverInput.Split(',');
 
-                    }
-                    else
-                    {
-                        int test = Convert.ToInt32(Math.Round(Convert.ToDouble(GameWorld.Instance.ServerInstance.ReturnData)));
+                        int playPosX = Int32.Parse(inputParameters[2]);
+
+                        int test = Convert.ToInt32(Math.Round(Convert.ToDouble(playPosX)));
 
                         Position = new Vector2(test, Position.Y);
                     }

@@ -24,6 +24,7 @@ namespace GruppeHessNetworkAssignment
         private int screenHeight = 1000;
 
         private int enemyID = 0;
+        //private int objectID = 0;
         private Server server;
         private Client client;
         private static GameWorld instance;
@@ -191,7 +192,7 @@ namespace GruppeHessNetworkAssignment
             // Makes sure the client sends the player's opdated position to the server.
             if (!isServer)
             {
-                client.Send(player.Position.X.ToString());
+                client.Send("Update,Player," + player.Position.X.ToString());
 
                 //try
                 //{
@@ -224,13 +225,14 @@ namespace GruppeHessNetworkAssignment
             //deletes objects in list-newobjects.
             NewGameObjects.Clear();
 
-            foreach (GameObject gameObject in gameObjects)
+            //foreach (GameObject gameObject in gameObjects)
+            for (int i = 0; i < gameObjects.Count; i++)
             {
-                gameObject.Update(gameTime);
+                gameObjects[i].Update(gameTime);
 
                 foreach (GameObject other in gameObjects)
                 {
-                    gameObject.CheckCollision(other);
+                    gameObjects[i].CheckCollision(other);
                 }
             }
 
@@ -271,6 +273,15 @@ namespace GruppeHessNetworkAssignment
         public void Destroy(GameObject gameObject)
         {
             deletedGameObjects.Add(gameObject);
+            //if (isServer)
+            //{
+            //    server.Send("Destroy," + gameObject.ID);
+            //}
+            //else
+            //{
+            //    client.Send("Destroy," + gameObject.ID);
+            //}
+
         }
 
         private void DrawCollisionBox(GameObject gameObject)

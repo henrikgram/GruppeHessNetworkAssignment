@@ -25,6 +25,16 @@ namespace GruppeHessNetworkAssignment
             {
                 // Destroys the laser and the enemy once collision between aforementioned GameObjects happens.
                 GameWorld.Instance.Destroy(other);
+                if (GameWorld.Instance.IsServer)
+                {
+                    GameWorld.Instance.ServerInstance.Send("Destroy," + other.ID);
+                    //GameWorld.Instance.ServerInstance.Send("Destroy," + this.ID);
+                }
+                else
+                {
+                    GameWorld.Instance.ClientInstance.Send("Destroy," + other.ID);
+                    //GameWorld.Instance.ClientInstance.Send("Destroy," + this.ID);
+                }
                 GameWorld.Instance.Destroy(this);
             }
         }

@@ -91,6 +91,11 @@ namespace GruppeHessNetworkAssignment.Network
                     {
                         UpdateCurrentEnemies();
                     }
+
+                    if (returnData.Contains("Destroy"))
+                    {
+                        DeleteEnemiesAccordingToServer();
+                    }
                 }
                 catch (Exception e)
                 {
@@ -110,7 +115,10 @@ namespace GruppeHessNetworkAssignment.Network
             switch (objectType)
             {
                 case ("Enemy"):
-                    GameWorld.Instance.NewGameObjects.Add(new Enemy(new Vector2(tmpx, 0-Asset.enemySprite.Height), tmpID));
+                    
+                    Enemy newEnemy = new Enemy(new Vector2(tmpx, 0-Asset.enemySprite.Height), tmpID);
+                    newEnemy.ID = tmpID;
+                    GameWorld.Instance.NewGameObjects.Add(newEnemy);
                     break;
 
                     //case ("Laser"):
@@ -137,7 +145,15 @@ namespace GruppeHessNetworkAssignment.Network
 
         private void DeleteEnemiesAccordingToServer()
         {
+            string[] inputParameters = returnData.Split(',');
 
+            int tmpID = Int32.Parse(inputParameters[1]);
+
+            GameObject destroyedObject = (Enemy)GameWorld.Instance.GameObjects.Find(o => o.ID == tmpID);
+            if (destroyedObject != null)
+            {
+                GameWorld.Instance.Destroy(destroyedObject);
+            }
         }
     }
 }
