@@ -90,10 +90,6 @@ namespace GruppeHessNetworkAssignment.Network
                         AddLasersAccordingToClient();
                     }
 
-                    //test = Convert.ToInt32(Math.Round(Convert.ToDouble(returnData)));
-
-                    //Console.WriteLine($"Test: {test}");
-
                     Console.WriteLine($"Server received: {returnData}");
                     //Console.WriteLine($"Message was sent from: {RemoteIpEndPoint.Address.ToString()} \nOn port number: {RemoteIpEndPoint.Port.ToString()}");
                     //Console.WriteLine();
@@ -106,6 +102,9 @@ namespace GruppeHessNetworkAssignment.Network
             }
         }
 
+        /// <summary>
+        /// Deletes objects that have been deleted from the client
+        /// </summary>
         private void DeleteObjectsAccordingToClient()
         {
             string[] inputParameters = returnData.Split('|');
@@ -119,6 +118,9 @@ namespace GruppeHessNetworkAssignment.Network
             }
         }
 
+        /// <summary>
+        /// Adds lasers based on input from the client
+        /// </summary>
         private void AddLasersAccordingToClient()
         {
             string[] inputParameters = returnData.Split('|');
@@ -126,8 +128,6 @@ namespace GruppeHessNetworkAssignment.Network
             int tmpID = Int32.Parse(inputParameters[2]);
             float tmpX = float.Parse(inputParameters[3]);
             float tmpY = float.Parse(inputParameters[4]);
-
-            Console.WriteLine("New Laser : ID: " + tmpID + " Position : " + new Vector2(tmpX, tmpY).ToString());
 
             Laser newLaser = new Laser(new Vector2(tmpX, tmpY));
             newLaser.ID = tmpID;

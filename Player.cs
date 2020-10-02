@@ -102,21 +102,6 @@ namespace GruppeHessNetworkAssignment
             {
                 string serverInput = GameWorld.Instance.ServerInstance.ReturnData;
 
-                //if (serverInput.Contains("New,Laser"))
-                //{
-                //    string[] inputParameters = serverInput.Split(',');
-
-                //    int tmpID = Int32.Parse(inputParameters[2]);
-                //    int tmpX = Int32.Parse(inputParameters[3]);
-                //    int tmpY = Int32.Parse(inputParameters[4]);
-
-                //    Laser newLaser = new Laser(new Vector2(tmpX, tmpY));
-
-                //    GameWorld.Instance.Instantiate(newLaser);
-
-                //    newLaser.ID = tmpID;
-                //}
-
                 if (serverInput.Contains("Update|Player"))
                 {
                     string[] inputParameters = serverInput.Split('|');
@@ -124,12 +109,8 @@ namespace GruppeHessNetworkAssignment
                     float playPosX = float.Parse(inputParameters[2]);
                     float playposY = float.Parse(inputParameters[3]);
 
-                    //int test = Convert.ToInt32(Math.Round(Convert.ToDouble(playPosX)));
-
                     Position = new Vector2(playPosX, playposY);
                 }
-
-
             }
 
             else
@@ -142,9 +123,6 @@ namespace GruppeHessNetworkAssignment
                     cooldown -= gameTime.ElapsedGameTime;
                 }
             }
-
-
-
         }
 
         public override void OnCollision(GameObject other)

@@ -82,7 +82,7 @@ namespace GruppeHessNetworkAssignment.Network
                     //                            RemoteIpEndPoint.Address.ToString() +
                     //                            " on their port number " +
                     //                            RemoteIpEndPoint.Port.ToString());
-                    
+
                     if (returnData.Contains("New|Enemy"))
                     {
                         AddNewEnemies();
@@ -105,6 +105,9 @@ namespace GruppeHessNetworkAssignment.Network
             }
         }
 
+        /// <summary>
+        /// Adds new enemies on the client when they are added on the server.
+        /// </summary>
         private void AddNewEnemies()
         {
             string[] inputParameters = returnData.Split('|');
@@ -114,21 +117,15 @@ namespace GruppeHessNetworkAssignment.Network
             float tmpx = float.Parse(inputParameters[3]);
             float tmpy = float.Parse(inputParameters[4]);
 
-            switch (objectType)
-            {
-                case ("Enemy"):
-                    
-                    Enemy newEnemy = new Enemy(new Vector2(tmpx, tmpy)/*, tmpID*/);
-                    newEnemy.ID = tmpID;
-                    GameWorld.Instance.NewGameObjects.Add(newEnemy);
-                    break;
+            Enemy newEnemy = new Enemy(new Vector2(tmpx, tmpy));
+            newEnemy.ID = tmpID;
+            GameWorld.Instance.NewGameObjects.Add(newEnemy);
 
-                    //case ("Laser"):
-                    //    newGameObjects.Add(new Laser(new Vector2(tmpx, tmpy), tmpID));
-                    //    break;
-            }
         }
 
+        /// <summary>
+        /// Updates the positions of enemies according to their position on the server.
+        /// </summary>
         private void UpdateCurrentEnemies()
         {
             string[] inputParameters = returnData.Split('|');
@@ -145,6 +142,9 @@ namespace GruppeHessNetworkAssignment.Network
             }
         }
 
+        /// <summary>
+        /// Deletes objects that have been deleted on the server.
+        /// </summary>
         private void DeleteObjectsAccordingToServer()
         {
             string[] inputParameters = returnData.Split('|');
