@@ -11,14 +11,18 @@ namespace GruppeHessNetworkAssignment.Network
     {
         private static TcpClient tcpClient;
 
+        string password;
+
 
         /// <summary>
         /// Constructs a TcpClientManager.
         /// </summary>
         /// <param name="ipAddress"></param>
         /// <param name="portNumber"></param>
-        public TcpClientManager(string ipAddress, int portNumber)
+        public TcpClientManager(string ipAddress, int portNumber, string password)
         {
+            this.password = password;
+
             tcpClient = new TcpClient();
             tcpClient.Connect(ipAddress, portNumber);
 
@@ -48,13 +52,46 @@ namespace GruppeHessNetworkAssignment.Network
             //Save the remote endpoint.
             remoteIPEndPoint = remoteEndPoint;
 
-            ////Define and send streamData to the server.
-            streamData = clientPort.ToString();
 
-            streamWriter.WriteLine(streamData);
 
             while (tcpClient.Connected)
             {
+                while (MD5.PasswordsAreEqual != true)
+                {
+                    //Encode password before sending.
+                    byte[] tmpPasswordEncoding = MD5.EncodePassword(password);
+                    //streamData = MD5.EncodePassword(password);
+
+                    //Convert byte array to a string before sending.
+                    streamData = MD5.ByteArrayToString(tmpPasswordEncoding);
+
+                    streamWriter.WriteLine(streamData);
+
+                    //Attempt to send the data to the server and read incoming stream data.
+                    try
+                    {
+                        streamWriter.Flush();
+
+                        streamData = streamReader.ReadLine();
+
+                        if (streamData == "Incorrect password.")
+                        {
+                            Console.WriteLine("Incorrect password.");
+                        }
+                    }
+
+                    catch (IOException ioe)
+                    {
+                        Console.WriteLine("The Tcp server has been closed.");
+                        Thread.CurrentThread.Abort();
+                    }
+                }
+
+                //Define and send streamData to the server.
+                streamData = clientPort.ToString();
+
+                streamWriter.WriteLine(streamData);
+
                 //Attempt to send the data to the server and read incoming stream data.
                 try
                 {

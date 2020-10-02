@@ -105,7 +105,10 @@ namespace GruppeHessNetworkAssignment
                     Console.WriteLine("What port would you like to connect to?");
                     string port = Console.ReadLine();
 
-                    new TcpClientManager(ip, int.Parse(port));
+                    Console.WriteLine("Write the server password: ");
+                    string password = Console.ReadLine();
+
+                    new TcpClientManager(ip, int.Parse(port), password);
 
                     isServer = false;
                     isStartScreen = false;

@@ -51,6 +51,7 @@
     <Compile Include="Highscore.cs" />
     <Compile Include="Laser.cs" />
     <Compile Include="Network\Client.cs" />
+    <Compile Include="Network\MD5.cs" />
     <Compile Include="Network\Server.cs" />
     <Compile Include="Network\TcpClientManager.cs" />
     <Compile Include="Network\TcpServerManager.cs" />

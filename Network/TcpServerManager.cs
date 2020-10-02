@@ -11,6 +11,8 @@ namespace GruppeHessNetworkAssignment.Network
     {
         private static TcpListener tcpServer;
 
+        private static string password;
+
 
         /// <summary>
         /// Constructs a TCPServerManager.
@@ -35,10 +37,14 @@ namespace GruppeHessNetworkAssignment.Network
 
             string localIPAddress = GetLocalIP();
 
+            password = GeneratePassword();
+
             Console.WriteLine($"Server on socket: {localIPAddress}:{endPoint.Port}");
+            Console.WriteLine($"Server password: {password}");
             Console.WriteLine("Waiting for a connection...");
 
             AcceptTcpClient();
+
         }
 
         /// <summary>
@@ -81,6 +87,61 @@ namespace GruppeHessNetworkAssignment.Network
             //Send and recieve streams as long as the connection i present.
             while (tcpClient.Connected)
             {
+                while (!MD5.PasswordsAreEqual)
+                {
+                    //Try to recieve a stream from the client.
+                    try
+                    {
+                        streamData = streamReader.ReadLine();
+
+                        //Encode password.
+                        byte[] tmpPasswordEncoding = MD5.EncodePassword(password);
+
+                        //Convert byte array to string.
+                        string tmpPassword = MD5.ByteArrayToString(tmpPasswordEncoding);
+
+                        //Compare the two encoded passwords.
+                        if (streamData != tmpPassword)
+                        {
+                            //What to send to the client.
+                            streamData = "Incorrect password.";
+                            streamWriter.WriteLine(streamData);
+
+                            //Attempt to send the data to the client.
+                            try
+                            {
+                                streamWriter.Flush();
+                            }
+
+                            catch (Exception e)
+                            {
+                                Console.WriteLine("Client on Tcp port " + endPoint.Port.ToString() + " has left the Tcp server.");
+                                Thread.CurrentThread.Abort();
+                            }
+                        }
+                    }
+
+                    catch (Exception e)
+                    {
+                        Console.WriteLine("Client on Tcp port " + endPoint.Port.ToString() + " has left the Tcp server.");
+                        Thread.CurrentThread.Abort();
+                    }
+                }
+
+                //Try to recieve a stream from the client.
+                try
+                {
+                    streamData = streamReader.ReadLine();
+                    remotePort = int.Parse(streamData);
+                    Console.WriteLine($"Recieved from Tcp client: {streamData}");
+                }
+
+                catch (Exception e)
+                {
+                    Console.WriteLine("Client on Tcp port " + endPoint.Port.ToString() + " has left the Tcp server.");
+                    Thread.CurrentThread.Abort();
+                }
+
                 //Try to recieve a stream from the client.
                 try
                 {
@@ -133,6 +194,20 @@ namespace GruppeHessNetworkAssignment.Network
             IPAddress[] addresses = ipHostEntry.AddressList;
 
             return addresses[addresses.Length - 1].ToString();
+        }
+
+        private string GeneratePassword()
+        {
+            int pwLength = 8;
+            Random random = new Random();
+            string password = null;
+
+            for (int i = 0; i < pwLength; i++)
+            {
+                password = password + random.Next(0, 9).ToString();
+            }
+
+            return password;
         }
     }
 }
