@@ -52,12 +52,17 @@ namespace GruppeHessNetworkAssignment
                 }
             }
 
-            if (keyState.IsKeyDown(Keys.Space) && canShoot)
+            if (keyState.IsKeyDown(Keys.Space) && canShoot && GameWorld.Instance.IsServer == false)
             {
                 // Shoot
                 Laser newLaser = new Laser(new Vector2(Position.X + Asset.playerSprite.Width / 2 - 5, Position.Y - 30));
-                //GameWorld.Instance.ClientInstance.Send("Shoot,Player," + newLaser.ID + "," + newLaser.Position.X + "," + newLaser.Position.Y);
+
+                GameWorld.Instance.ClientInstance.Send("New|Laser|" + newLaser.ID + "|" + newLaser.Position.X + "|" + newLaser.Position.Y);
+
+                Console.WriteLine("New Laser : ID : " + newLaser.ID + " Position : " + newLaser.Position.ToString());
+
                 GameWorld.Instance.Instantiate(newLaser);
+                //GameWorld.Instance.ClientInstance.Send("s");
                 // Client sends a message to the server, so the server knows to shoot from the player as well.
                 // Two next functions make sure shoot has a cool down.
                 canShoot = false;
@@ -95,41 +100,35 @@ namespace GruppeHessNetworkAssignment
 
             if (GameWorld.Instance.IsServer == true && GameWorld.Instance.ServerInstance.ReturnData != null)
             {
+                string serverInput = GameWorld.Instance.ServerInstance.ReturnData;
 
-                //try
+                //if (serverInput.Contains("New,Laser"))
+                //{
+                //    string[] inputParameters = serverInput.Split(',');
+
+                //    int tmpID = Int32.Parse(inputParameters[2]);
+                //    int tmpX = Int32.Parse(inputParameters[3]);
+                //    int tmpY = Int32.Parse(inputParameters[4]);
+
+                //    Laser newLaser = new Laser(new Vector2(tmpX, tmpY));
+
+                //    GameWorld.Instance.Instantiate(newLaser);
+
+                //    newLaser.ID = tmpID;
+                //}
+
+                if (serverInput.Contains("Update|Player"))
                 {
-                    string serverInput = GameWorld.Instance.ServerInstance.ReturnData;
+                    string[] inputParameters = serverInput.Split('|');
 
-                    //if (serverInput.StartsWith("Shoot,Player"))
-                    //{
-                    //    string[] inputParameters = serverInput.Split(',');
+                    float playPosX = float.Parse(inputParameters[2]);
+                    float playposY = float.Parse(inputParameters[3]);
 
-                    //    int tmpID = Int32.Parse(inputParameters[2]);
-                    //    int tmpX = Int32.Parse(inputParameters[3]);
-                    //    int tmpY = Int32.Parse(inputParameters[4]);
+                    //int test = Convert.ToInt32(Math.Round(Convert.ToDouble(playPosX)));
 
-                    //    Laser newLaser = new Laser(new Vector2(tmpX + tmpY));
-
-                    //    GameWorld.Instance.Instantiate(newLaser);
-
-                    //    newLaser.ID = tmpID;
-                    //}
-                    if (serverInput.Contains("Player,Position"))
-                    {
-                        string[] inputParameters = serverInput.Split(',');
-
-                        int playPosX = Int32.Parse(inputParameters[2]);
-
-                        int test = Convert.ToInt32(Math.Round(Convert.ToDouble(playPosX)));
-
-                        Position = new Vector2(test, Position.Y);
-                    }
+                    Position = new Vector2(playPosX, playposY);
                 }
-                //catch (Exception e)
-                {
 
-                    //Console.WriteLine("dn " + e);
-                }
 
             }
 

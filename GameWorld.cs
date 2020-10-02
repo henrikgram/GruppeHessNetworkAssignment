@@ -24,7 +24,7 @@ namespace GruppeHessNetworkAssignment
         private int screenHeight = 1000;
 
         private int enemyID = 0;
-        //private int objectID = 0;
+        private int objectID = 0;
         private Server server;
         private Client client;
         private static GameWorld instance;
@@ -34,9 +34,7 @@ namespace GruppeHessNetworkAssignment
         private bool isServer = false;
         private byte maxPlayers = 1;
 
-        private int wave = 0;
-
-        //public int ObjectID { get => objectID++; set => objectID = value; }
+        public int ObjectID { get => objectID++; set => objectID = value; }
         public byte PlayerCount { get; set; } = 0;
         public bool ProgramRunning { get; set; } = true;
 
@@ -192,7 +190,7 @@ namespace GruppeHessNetworkAssignment
             // Makes sure the client sends the player's opdated position to the server.
             if (!isServer)
             {
-                client.Send("Update,Player," + player.Position.X.ToString());
+                client.Send("Update|Player|" + player.Position.X + "|" + player.Position.Y);
 
                 //try
                 //{
@@ -306,23 +304,26 @@ namespace GruppeHessNetworkAssignment
             {
                 for (int i = 0; i < 5; i++)
                 {
-                    Enemy tmpEnemy = new Enemy(new Vector2(rnd.Next(0, (int)ScreenSize.X - Asset.enemySprite.Width), 0 - Asset.enemySprite.Height), enemyID);
+                    Enemy tmpEnemy = new Enemy(new Vector2(rnd.Next(0, (int)ScreenSize.X - Asset.enemySprite.Width), 0 - Asset.enemySprite.Height)/*, enemyID*/);
                     NewGameObjects.Add(tmpEnemy);
 
-                    server.Send("New,Enemy," + tmpEnemy.ID + "," + tmpEnemy.Position.X);
-                    enemyID++;
+                    server.Send("New|Enemy|" + tmpEnemy.ID + "|" + tmpEnemy.Position.X + "|" + tmpEnemy.Position.Y);
+                    //enemyID++;
                 }
                 timeTillNewInvasionForce = new TimeSpan(0, 0, 5);
             }
         }
 
+        /// <summary>
+        /// Sends information about the enemmy ships location to the client so their positions can be updated.
+        /// </summary>
         private void SendEnemyShipInfoToClient()
         {
             List<GameObject> enemies = (gameObjects.FindAll(e => e is Enemy));
             for (int i = 0; i < enemies.Count; i++)
             {
                 Enemy currentEnemy = (Enemy)enemies[i];
-                server.Send("Update,Enemy," + currentEnemy.ID + "," + currentEnemy.Position.X + "," + currentEnemy.Position.Y);
+                server.Send("Update|Enemy|" + currentEnemy.ID + "|" + currentEnemy.Position.X + "|" + currentEnemy.Position.Y);
             }
         }
     }

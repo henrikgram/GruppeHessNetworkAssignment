@@ -13,13 +13,13 @@ namespace GruppeHessNetworkAssignment
     {
         //private int iD;
 
-        public Enemy(Vector2 position, int shipID)
+        public Enemy(Vector2 position/*, int shipID*/)
         {
             this.Position = position;
             velocity = new Vector2(0, 1);
             speed = 100f;
             sprite = Asset.enemySprite;
-            this.ID = shipID;
+            //this.ID = shipID;
         }
       
 

@@ -32,6 +32,7 @@ namespace GruppeHessNetworkAssignment.Network
 
             Thread receivingThread = new Thread(Receive);
             receivingThread.IsBackground = true;
+            receivingThread.Name = "Receive Thread Client";
             receivingThread.Start();
 
             //GameWorld.Instance.PlayerCount++;
@@ -82,19 +83,19 @@ namespace GruppeHessNetworkAssignment.Network
                     //                            " on their port number " +
                     //                            RemoteIpEndPoint.Port.ToString());
                     
-                    if (returnData.Contains("New,Enemy"))
+                    if (returnData.Contains("New|Enemy"))
                     {
                         AddNewEnemies();
                     }
 
-                    if (returnData.Contains("Update,Enemy,"))
+                    if (returnData.Contains("Update|Enemy"))
                     {
                         UpdateCurrentEnemies();
                     }
 
                     if (returnData.Contains("Destroy"))
                     {
-                        DeleteEnemiesAccordingToServer();
+                        DeleteObjectsAccordingToServer();
                     }
                 }
                 catch (Exception e)
@@ -106,17 +107,18 @@ namespace GruppeHessNetworkAssignment.Network
 
         private void AddNewEnemies()
         {
-            string[] inputParameters = returnData.Split(',');
+            string[] inputParameters = returnData.Split('|');
 
             string objectType = inputParameters[1];
             int tmpID = Int32.Parse(inputParameters[2]);
-            int tmpx = Int32.Parse(inputParameters[3]);
+            float tmpx = float.Parse(inputParameters[3]);
+            float tmpy = float.Parse(inputParameters[4]);
 
             switch (objectType)
             {
                 case ("Enemy"):
                     
-                    Enemy newEnemy = new Enemy(new Vector2(tmpx, 0-Asset.enemySprite.Height), tmpID);
+                    Enemy newEnemy = new Enemy(new Vector2(tmpx, tmpy)/*, tmpID*/);
                     newEnemy.ID = tmpID;
                     GameWorld.Instance.NewGameObjects.Add(newEnemy);
                     break;
@@ -129,23 +131,23 @@ namespace GruppeHessNetworkAssignment.Network
 
         private void UpdateCurrentEnemies()
         {
-            string[] inputParameters = returnData.Split(',');
+            string[] inputParameters = returnData.Split('|');
 
             string objectType = inputParameters[1];
             int tmpID = Int32.Parse(inputParameters[2]);
-            int tmpx = Int32.Parse(inputParameters[3]);
-            int tmpy = Int32.Parse(inputParameters[4]);
+            float tmpx = float.Parse(inputParameters[3]);
+            float tmpy = float.Parse(inputParameters[4]);
 
-            Enemy tmpEnemy = (Enemy)GameWorld.Instance.GameObjects.Find(e => e.ID == tmpID);
-            if (tmpEnemy != null && tmpEnemy.Position != new Vector2(tmpx,tmpy))
+            Enemy tmpEnemy = (Enemy)GameWorld.Instance.GameObjects.Find(e => e is Enemy && e.ID == tmpID);
+            if (tmpEnemy != null/* && tmpEnemy.Position != new Vector2(tmpx,tmpy)*/)
             {
                 tmpEnemy.Position = new Vector2(tmpx, tmpy);
             }
         }
 
-        private void DeleteEnemiesAccordingToServer()
+        private void DeleteObjectsAccordingToServer()
         {
-            string[] inputParameters = returnData.Split(',');
+            string[] inputParameters = returnData.Split('|');
 
             int tmpID = Int32.Parse(inputParameters[1]);
 

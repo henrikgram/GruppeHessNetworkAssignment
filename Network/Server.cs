@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework.Input;
+﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,6 +30,7 @@ namespace GruppeHessNetworkAssignment.Network
         {
             Thread receivingThread = new Thread(Recieve);
             receivingThread.IsBackground = true;
+            receivingThread.Name = "Receive Thread Server";
             receivingThread.Start();
         }
 
@@ -78,9 +80,14 @@ namespace GruppeHessNetworkAssignment.Network
 
                     returnData = Encoding.ASCII.GetString(receiveBytes);
 
-                    if (returnData.StartsWith("Destroy"))
+                    if (returnData.Contains("Destroy"))
                     {
-                        DeleteEnemiesAccordingToClient();
+                        DeleteObjectsAccordingToClient();
+                    }
+
+                    if (returnData.Contains("New|Laser"))
+                    {
+                        AddLasersAccordingToClient();
                     }
 
                     //test = Convert.ToInt32(Math.Round(Convert.ToDouble(returnData)));
@@ -99,9 +106,9 @@ namespace GruppeHessNetworkAssignment.Network
             }
         }
 
-        private void DeleteEnemiesAccordingToClient()
+        private void DeleteObjectsAccordingToClient()
         {
-            string[] inputParameters = returnData.Split(',');
+            string[] inputParameters = returnData.Split('|');
 
             int tmpID = Int32.Parse(inputParameters[1]);
 
@@ -110,6 +117,22 @@ namespace GruppeHessNetworkAssignment.Network
             {
                 GameWorld.Instance.Destroy(destroyedObject);
             }
+        }
+
+        private void AddLasersAccordingToClient()
+        {
+            string[] inputParameters = returnData.Split('|');
+
+            int tmpID = Int32.Parse(inputParameters[2]);
+            float tmpX = float.Parse(inputParameters[3]);
+            float tmpY = float.Parse(inputParameters[4]);
+
+            Console.WriteLine("New Laser : ID: " + tmpID + " Position : " + new Vector2(tmpX, tmpY).ToString());
+
+            Laser newLaser = new Laser(new Vector2(tmpX, tmpY));
+            newLaser.ID = tmpID;
+            GameWorld.Instance.Instantiate(newLaser);
+
         }
     }
 }

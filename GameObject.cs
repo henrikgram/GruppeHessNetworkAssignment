@@ -17,13 +17,14 @@ namespace GruppeHessNetworkAssignment
         protected Texture2D sprite;
         protected Vector2 velocity;
         protected float speed;
-        private int iD;
+        //private int iD;
 
-        public int ID
-        {
-            get { return iD; }
-            set { iD = value; }
-        }
+        //public int ID
+        //{
+        //    get { return iD; }
+        //    set { iD = value; }
+        //}
+        public int ID = GameWorld.Instance.ObjectID;
 
         public virtual Rectangle CollisionBox
         {
