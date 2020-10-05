@@ -80,16 +80,6 @@ namespace GruppeHessNetworkAssignment.Network
 
                     returnData = Encoding.ASCII.GetString(receiveBytes);
 
-                    if (returnData.Contains("Destroy"))
-                    {
-                        DeleteObjectsAccordingToClient();
-                    }
-
-                    if (returnData.Contains("New|Laser"))
-                    {
-                        AddLasersAccordingToClient();
-                    }
-
                     Console.WriteLine($"Server received: {returnData}");
                     //Console.WriteLine($"Message was sent from: {RemoteIpEndPoint.Address.ToString()} \nOn port number: {RemoteIpEndPoint.Port.ToString()}");
                     //Console.WriteLine();
@@ -134,7 +124,7 @@ namespace GruppeHessNetworkAssignment.Network
             Laser newLaser = new Laser(new Vector2(tmpX, tmpY));
             newLaser.ID = tmpID;
             GameWorld.Instance.Instantiate(newLaser);
-          }
+        }
 
 
         public void HandleOtherPlayer()
@@ -143,20 +133,30 @@ namespace GruppeHessNetworkAssignment.Network
             {
                 string serverInput = returnData;
 
-                if (serverInput == "s")
+                if (serverInput.Contains("New|Laser"))
                 {
-                    GameWorld.Instantiate(new Laser(new Vector2(GameWorld.Instance.PlayerClient.Position.X + Asset.clientPlayerSprite.Width / 2 - 5, GameWorld.Instance.PlayerClient.Position.Y - 30)));
+                    AddLasersAccordingToClient();
                 }
                 //// Adds a new point once an enemy has been hit. "Point" is sent from the laser class.
                 //else if (serverInput == "Point")
                 //{
                 //    Highscore.Instance.Points++;
                 //}
-                else
-                {
-                    int test = test = Convert.ToInt32(Math.Round(Convert.ToDouble(returnData)));
+                //string serverInput = GameWorld.Instance.ServerInstance.ReturnData;
 
-                    GameWorld.Instance.PlayerClient.Position = new Vector2(test, GameWorld.Instance.PlayerClient.Position.Y);
+                if (returnData.Contains("Destroy"))
+                {
+                    DeleteObjectsAccordingToClient();
+                }
+
+                if (serverInput.Contains("Update|Player"))
+                {
+                    string[] inputParameters = serverInput.Split('|');
+
+                    float playPosX = float.Parse(inputParameters[2]);
+                    float playposY = float.Parse(inputParameters[3]);
+
+                    GameWorld.Instance.PlayerClient.Position = new Vector2(playPosX, playposY);
                 }
             }
         }

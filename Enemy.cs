@@ -34,7 +34,7 @@ namespace GruppeHessNetworkAssignment
 
             if (Position.Y > GameWorld.Instance.ScreenHeight + Asset.enemySprite.Height)
             {
-                GameWorld.Destroy(this);
+                GameWorld.Instance.Destroy(this);
 
                 if (GameWorld.Instance.IsServer)
                 {

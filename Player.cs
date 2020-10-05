@@ -68,17 +68,28 @@ namespace GruppeHessNetworkAssignment
                 }
             }
 
-            if (keyState.IsKeyDown(Keys.Space) && canShoot && GameWorld.Instance.IsServer == false)
+            if (keyState.IsKeyDown(Keys.Space) && canShoot)
             {
-                // Shoot
-                Laser newLaser = new Laser(new Vector2(Position.X + Asset.playerSprite.Width / 2 - 5, Position.Y - 30));
+                //Laser newLaser;
 
-                GameWorld.Instance.ClientInstance.Send("New|Laser|" + newLaser.ID + "|" + newLaser.Position.X + "|" + newLaser.Position.Y);
+                Laser newLaser = new Laser(new Vector2(player.Position.X + sprite.Width / 2 - 5, player.Position.Y - 30));
 
-                Console.WriteLine("New Laser : ID : " + newLaser.ID + " Position : " + newLaser.Position.ToString());
+                if (!GameWorld.Instance.IsServer)
+                {
+                    // Shoot
+                    //newLaser = new Laser(new Vector2(GameWorld.Instance.PlayerClient.Position.X + Asset.playerSprite.Width / 2 - 5, GameWorld.Instance.PlayerClient.Position.Y - 30));
+                    GameWorld.Instance.ClientInstance.Send("New|Laser|" + newLaser.ID + "|" + newLaser.Position.X + "|" + newLaser.Position.Y);
+                    Console.WriteLine("New Laser : ID : " + newLaser.ID + " Position : " + newLaser.Position.ToString());
+                }
+
+                if (GameWorld.Instance.IsServer)
+                {
+                    //newLaser = new Laser(new Vector2(GameWorld.Instance.PlayerServer.Position.X + Asset.playerSprite.Width / 2 - 5, GameWorld.Instance.PlayerServer.Position.Y - 30));
+                    GameWorld.Instance.ServerInstance.Send("New|Laser|" + newLaser.ID + "|" + newLaser.Position.X + "|" + newLaser.Position.Y);
+                }
 
                 GameWorld.Instance.Instantiate(newLaser);
-                //GameWorld.Instance.ClientInstance.Send("s");
+
                 // Client sends a message to the server, so the server knows to shoot from the player as well.
                 // Two next functions make sure shoot has a cool down.
                 canShoot = false;
@@ -104,20 +115,20 @@ namespace GruppeHessNetworkAssignment
         public override void Update(GameTime gameTime)
         {
 
-            if (GameWorld.Instance.IsServer == true && GameWorld.Instance.ServerInstance.ReturnData != null)
-            {
-                string serverInput = GameWorld.Instance.ServerInstance.ReturnData;
+            //if (GameWorld.Instance.IsServer == true && GameWorld.Instance.ServerInstance.ReturnData != null)
+            //{
+            //    string serverInput = GameWorld.Instance.ServerInstance.ReturnData;
 
-                if (serverInput.Contains("Update|Player"))
-                {
-                    string[] inputParameters = serverInput.Split('|');
+            //    if (serverInput.Contains("Update|Player"))
+            //    {
+            //        string[] inputParameters = serverInput.Split('|');
 
-                    float playPosX = float.Parse(inputParameters[2]);
-                    float playposY = float.Parse(inputParameters[3]);
+            //        float playPosX = float.Parse(inputParameters[2]);
+            //        float playposY = float.Parse(inputParameters[3]);
 
-                    Position = new Vector2(playPosX, playposY);
-                }
-            }
+            //        Position = new Vector2(playPosX, playposY);
+            //    }
+            //}
 
             Player player;
 

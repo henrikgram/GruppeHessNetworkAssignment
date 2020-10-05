@@ -84,20 +84,6 @@ namespace GruppeHessNetworkAssignment.Network
                     //                            " on their port number " +
                     //                            RemoteIpEndPoint.Port.ToString());
 
-                    if (returnData.Contains("New|Enemy"))
-                    {
-                        AddNewEnemies();
-                    }
-
-                    if (returnData.Contains("Update|Enemy"))
-                    {
-                        UpdateCurrentEnemies();
-                    }
-
-                    if (returnData.Contains("Destroy"))
-                    {
-                        DeleteObjectsAccordingToServer();
-                    }
                 }
                 catch (Exception e)
                 {
@@ -110,31 +96,50 @@ namespace GruppeHessNetworkAssignment.Network
         {
             if (GameWorld.Instance.IsServer == false && returnData != null && GameWorld.Instance.Instantiated)
             {
-                string clientInput = returnData;
-
-                if (clientInput == "s")
-                {
-                    GameWorld.Instantiate(new Laser(new Vector2(GameWorld.Instance.PlayerServer.Position.X + Asset.playerSprite.Width / 2 - 5, GameWorld.Instance.PlayerServer.Position.Y - 30)));
-                }
                 // Adds a new point once an enemy has been hit. "Point" is sent from the laser class.
-                else if (clientInput == "Point")
+                if (returnData == "Point")
                 {
                     Highscore.Instance.Points++;
                 }
-                else if (clientInput == "Lose hp")
+
+                if (returnData == "Lose hp")
                 {
                     GameWorld.Instance.PlayerServer.PlayerHealth--;
                 }
-                else
+
+                if (returnData.Contains("New|Laser"))
                 {
-                    int test = Convert.ToInt32(Math.Round(Convert.ToDouble(returnData)));
-
-                    GameWorld.Instance.PlayerServer.Position = new Vector2(test, GameWorld.Instance.PlayerServer.Position.Y);
+                    AddLasersAccordingToServer();
                 }
-              }
-            }
 
-            
+                if (returnData.Contains("New|Enemy"))
+                {
+                    AddNewEnemies();
+                }
+
+                if (returnData.Contains("Update|Enemy"))
+                {
+                    UpdateCurrentEnemies();
+                }
+
+                if (returnData.Contains("Destroy"))
+                {
+                    DeleteObjectsAccordingToServer();
+                }
+
+                if (returnData.Contains("Update|Player"))
+                {
+                    string[] inputParameters = returnData.Split('|');
+
+                    float playPosX = float.Parse(inputParameters[2]);
+                    float playposY = float.Parse(inputParameters[3]);
+
+                    GameWorld.Instance.PlayerServer.Position = new Vector2(playPosX, playposY);
+                }
+
+            }
+        }
+
         /// <summary>
         /// Adds new enemies on the client when they are added on the server.
         /// </summary>
@@ -150,7 +155,6 @@ namespace GruppeHessNetworkAssignment.Network
             Enemy newEnemy = new Enemy(new Vector2(tmpx, tmpy));
             newEnemy.ID = tmpID;
             GameWorld.Instance.NewGameObjects.Add(newEnemy);
-
         }
 
         /// <summary>
@@ -170,6 +174,22 @@ namespace GruppeHessNetworkAssignment.Network
             {
                 tmpEnemy.Position = new Vector2(tmpx, tmpy);
             }
+        }
+
+        /// <summary>
+        /// Adds lasers based on input from the client
+        /// </summary>
+        private void AddLasersAccordingToServer()
+        {
+            string[] inputParameters = returnData.Split('|');
+
+            int tmpID = Int32.Parse(inputParameters[2]);
+            float tmpX = float.Parse(inputParameters[3]);
+            float tmpY = float.Parse(inputParameters[4]);
+
+            Laser newLaser = new Laser(new Vector2(tmpX, tmpY));
+            newLaser.ID = tmpID;
+            GameWorld.Instance.Instantiate(newLaser);
         }
 
         /// <summary>

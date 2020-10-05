@@ -215,6 +215,8 @@ namespace GruppeHessNetworkAssignment
                         timeTillNewInvasionForce -= gameTime.ElapsedGameTime;
                     }
 
+                    server.Send("Update|Player|" + PlayerServer.Position.X + "|" + PlayerServer.Position.Y);
+
                     //SendEnemyShipInfoToClient();
                 }
 
@@ -223,7 +225,7 @@ namespace GruppeHessNetworkAssignment
                 {
                     //client.Send(PlayerClient.Position.X.ToString());
 
-                    client.Send("Update|Player|" + player.Position.X + "|" + player.Position.Y);
+                    client.Send("Update|Player|" + PlayerClient.Position.X + "|" + PlayerClient.Position.Y);
 
                     //try
                     //{
@@ -246,26 +248,25 @@ namespace GruppeHessNetworkAssignment
 
                 //ads all objects in list-newobjects to list-gameobjects.
                 gameObjects.AddRange(NewGameObjects);
-            //deletes objects in list-deleteobjects.
-            deletedGameObjects.Clear();
-            //deletes objects in list-newobjects.
-            NewGameObjects.Clear();
+                //deletes objects in list-deleteobjects.
+                deletedGameObjects.Clear();
+                //deletes objects in list-newobjects.
+                NewGameObjects.Clear();
 
-            //foreach (GameObject gameObject in gameObjects)
-            for (int i = 0; i < gameObjects.Count; i++)
-            {
-                gameObjects[i].Update(gameTime);
-
-                foreach (GameObject gameObject in gameObjects)
+                //foreach (GameObject gameObject in gameObjects)
+                for (int i = 0; i < gameObjects.Count; i++)
                 {
-                    gameObjects[i].CheckCollision(other);
+                    gameObjects[i].Update(gameTime);
+
+                    foreach (GameObject other in gameObjects)
+                    {
+                        gameObjects[i].CheckCollision(other);
+                    }
+
+                    // TODO: Add your update logic here
+
+                    base.Update(gameTime);
                 }
-
-
-
-                // TODO: Add your update logic here
-
-                base.Update(gameTime);
             }
         }
 
