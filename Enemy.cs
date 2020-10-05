@@ -36,7 +36,7 @@ namespace GruppeHessNetworkAssignment
             {
                 GameWorld.Instance.Destroy(this);
 
-                if (GameWorld.Instance.IsServer)
+                  if (GameWorld.Instance.IsServer)
                 {
                     GameWorld.Instance.ServerInstance.Send("Lose hp");
                     GameWorld.Instance.PlayerServer.PlayerHealth--;

@@ -51,7 +51,6 @@ namespace GruppeHessNetworkAssignment
         public bool SetUpServerPlayer { get; set; }
         public Vector2 ScreenSize { get; private set; }
 
-        private float tickTimer = 3;
         public int ObjectID { get => objectID++; set => objectID = value; }
 
 
@@ -89,6 +88,7 @@ namespace GruppeHessNetworkAssignment
             // CHANGES THE SCREEN SIZE.
             graphics.PreferredBackBufferHeight = ScreenHeight;
             graphics.ApplyChanges();
+
             ScreenSize = new Vector2(graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight);
 
             base.Initialize();
@@ -105,30 +105,23 @@ namespace GruppeHessNetworkAssignment
                 Console.WriteLine("Server (S) or Client (C)?");
                 string input = Console.ReadLine().ToUpper();
 
+                // Instantiates the server, if the game starts in server mode.
                 if (input == "S")
-                {
-                    // Instantiates the server, if the game starts in server mode.
+                {                 
                     server = new Server();
                     highscore = new Highscore();
                     isServer = true;
                     startScreen = false;
-
-                    //Console.WriteLine($"Server started on port: {server.Port} ");
-
-                    //server.Send((player.Position.X).ToString());
                 }
 
+                // Instantiates a client, if the game starts in player mode.
                 else if (input == "C")
                 {
-                    // Instantiates a client, if the game starts in player mode.
-
                     Console.WriteLine("What port would you like to connect to?");
                     client = new Client(Int32.Parse(Console.ReadLine()));
 
                     isServer = false;
                     startScreen = false;
-
-                    //client.Send((player.Position.X).ToString());
                 }
 
                 else
@@ -148,10 +141,8 @@ namespace GruppeHessNetworkAssignment
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
+            // Loads all the assets(sprites) in the game.
             Asset.LoadContent(Content);
-
-            //gameObjects.Add(player = new Player(new Vector2(ScreenSize.X / 2, ScreenSize.Y - Asset.playerSprite.Height)));
-            //gameObjects.Add(new Enemy(new Vector2(300, 300)));
 
             // TODO: use this.Content to load your game content here
         }
@@ -193,8 +184,9 @@ namespace GruppeHessNetworkAssignment
                 //}
                 // Only draws the player once all players has joined the game.
                 // For client below.
-                if (/*!isServer && */!Instantiated)
+                if (!Instantiated)
                 {
+                    // Makes sure a server is set up first.
                     SetUpServerPlayer = true;
                     gameObjects.Add(PlayerServer = new Player(new Vector2(0, ScreenSize.Y - Asset.playerSprite.Height)));
                     gameObjects.Add(PlayerClient = new Player(new Vector2(ScreenSize.X - Asset.clientPlayerSprite.Width, ScreenSize.Y - Asset.clientPlayerSprite.Height)));
@@ -248,8 +240,6 @@ namespace GruppeHessNetworkAssignment
 
                 //ads all objects in list-newobjects to list-gameobjects.
                 gameObjects.AddRange(NewGameObjects);
-                //deletes objects in list-deleteobjects.
-                deletedGameObjects.Clear();
                 //deletes objects in list-newobjects.
                 NewGameObjects.Clear();
 
@@ -262,11 +252,19 @@ namespace GruppeHessNetworkAssignment
                     {
                         gameObjects[i].CheckCollision(other);
                     }
-
-                    // TODO: Add your update logic here
-
-                    base.Update(gameTime);
                 }
+
+                for (int i = 0; i < deletedGameObjects.Count; i++)
+                {
+                    gameObjects.Remove(deletedGameObjects[i]);
+                }
+
+                //deletes objects in list-deleteobjects.
+                deletedGameObjects.Clear();
+
+                // TODO: Add your update logic here
+
+                base.Update(gameTime);
             }
         }
 
@@ -306,15 +304,6 @@ namespace GruppeHessNetworkAssignment
         public void Destroy(GameObject gameObject)
         {
             deletedGameObjects.Add(gameObject);
-            //if (isServer)
-            //{
-            //    server.Send("Destroy," + gameObject.ID);
-            //}
-            //else
-            //{
-            //    client.Send("Destroy," + gameObject.ID);
-            //}
-
         }
 
         private void DrawCollisionBox(GameObject gameObject)
