@@ -74,21 +74,23 @@ namespace GruppeHessNetworkAssignment
 
                 Laser newLaser = new Laser(new Vector2(player.Position.X + sprite.Width / 2 - 5, player.Position.Y - 30));
 
-                if (!GameWorld.Instance.IsServer)
+                if (!GameWorld.Instance.IsServer && GameWorld.Instance.PlayerClient == this)
                 {
                     // Shoot
                     //newLaser = new Laser(new Vector2(GameWorld.Instance.PlayerClient.Position.X + Asset.playerSprite.Width / 2 - 5, GameWorld.Instance.PlayerClient.Position.Y - 30));
                     GameWorld.Instance.ClientInstance.Send("New|Laser|" + newLaser.ID + "|" + newLaser.Position.X + "|" + newLaser.Position.Y);
                     Console.WriteLine("New Laser : ID : " + newLaser.ID + " Position : " + newLaser.Position.ToString());
+                    GameWorld.Instance.Instantiate(newLaser);
                 }
 
-                if (GameWorld.Instance.IsServer)
+                if (GameWorld.Instance.IsServer && GameWorld.Instance.PlayerServer == this)
                 {
                     //newLaser = new Laser(new Vector2(GameWorld.Instance.PlayerServer.Position.X + Asset.playerSprite.Width / 2 - 5, GameWorld.Instance.PlayerServer.Position.Y - 30));
                     GameWorld.Instance.ServerInstance.Send("New|Laser|" + newLaser.ID + "|" + newLaser.Position.X + "|" + newLaser.Position.Y);
+                    GameWorld.Instance.Instantiate(newLaser);
                 }
 
-                GameWorld.Instance.Instantiate(newLaser);
+                //GameWorld.Instance.Instantiate(newLaser);
 
                 // Client sends a message to the server, so the server knows to shoot from the player as well.
                 // Two next functions make sure shoot has a cool down.

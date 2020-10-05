@@ -77,6 +77,10 @@ namespace GruppeHessNetworkAssignment.Network
 
                     Console.WriteLine("Client received: " +
                                               returnData.ToString());
+                    if (returnData.Contains("Destroy"))
+                    {
+                        DeleteObjectsAccordingToServer();
+                    }
 
                     HandleReturnData();
                     //Console.WriteLine("This message was sent from " +
@@ -120,11 +124,6 @@ namespace GruppeHessNetworkAssignment.Network
                 if (returnData.Contains("Update|Enemy"))
                 {
                     UpdateCurrentEnemies();
-                }
-
-                if (returnData.Contains("Destroy"))
-                {
-                    DeleteObjectsAccordingToServer();
                 }
 
                 if (returnData.Contains("Update|Player"))

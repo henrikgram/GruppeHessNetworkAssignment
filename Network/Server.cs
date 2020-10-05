@@ -84,6 +84,11 @@ namespace GruppeHessNetworkAssignment.Network
                     //Console.WriteLine($"Message was sent from: {RemoteIpEndPoint.Address.ToString()} \nOn port number: {RemoteIpEndPoint.Port.ToString()}");
                     //Console.WriteLine();
 
+                    if (returnData.Contains("Destroy"))
+                    {
+                        DeleteObjectsAccordingToClient();
+                    }
+
                     HandleOtherPlayer();
                 }
                 catch (Exception e)
@@ -144,10 +149,6 @@ namespace GruppeHessNetworkAssignment.Network
                 //}
                 //string serverInput = GameWorld.Instance.ServerInstance.ReturnData;
 
-                if (returnData.Contains("Destroy"))
-                {
-                    DeleteObjectsAccordingToClient();
-                }
 
                 if (serverInput.Contains("Update|Player"))
                 {
