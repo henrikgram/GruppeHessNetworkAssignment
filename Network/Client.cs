@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace GruppeHessNetworkAssignment.Network
 {
-    class Client
+    public class Client
     {
         private static int port = 13000;
         private int serverPort;
@@ -35,10 +35,9 @@ namespace GruppeHessNetworkAssignment.Network
             receivingThread.Name = "Receive Thread Client";
             receivingThread.Start();
 
-            //GameWorld.Instance.PlayerCount++;
-            //Send("P");
+            Send("P");
+            GameWorld.Instance.PlayerCount++;
         }
-
 
         public void Send(string message)
         {
@@ -78,6 +77,8 @@ namespace GruppeHessNetworkAssignment.Network
 
                     Console.WriteLine("Client received: " +
                                               returnData.ToString());
+
+                    HandleReturnData();
                     //Console.WriteLine("This message was sent from " +
                     //                            RemoteIpEndPoint.Address.ToString() +
                     //                            " on their port number " +
@@ -105,6 +106,35 @@ namespace GruppeHessNetworkAssignment.Network
             }
         }
 
+        public void HandleReturnData()
+        {
+            if (GameWorld.Instance.IsServer == false && returnData != null && GameWorld.Instance.Instantiated)
+            {
+                string clientInput = returnData;
+
+                if (clientInput == "s")
+                {
+                    GameWorld.Instantiate(new Laser(new Vector2(GameWorld.Instance.PlayerServer.Position.X + Asset.playerSprite.Width / 2 - 5, GameWorld.Instance.PlayerServer.Position.Y - 30)));
+                }
+                // Adds a new point once an enemy has been hit. "Point" is sent from the laser class.
+                else if (clientInput == "Point")
+                {
+                    Highscore.Instance.Points++;
+                }
+                else if (clientInput == "Lose hp")
+                {
+                    GameWorld.Instance.PlayerServer.PlayerHealth--;
+                }
+                else
+                {
+                    int test = Convert.ToInt32(Math.Round(Convert.ToDouble(returnData)));
+
+                    GameWorld.Instance.PlayerServer.Position = new Vector2(test, GameWorld.Instance.PlayerServer.Position.Y);
+                }
+              }
+            }
+
+            
         /// <summary>
         /// Adds new enemies on the client when they are added on the server.
         /// </summary>

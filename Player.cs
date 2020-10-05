@@ -11,20 +11,36 @@ using System.Threading.Tasks;
 
 namespace GruppeHessNetworkAssignment
 {
-    class Player : GameObject
+    public class Player : GameObject
     {
         private bool canShoot = true;
         private TimeSpan cooldown;
+
+        public int PlayerHealth { get; set; }
+
 
         public Player(Vector2 position)
         {
             this.Position = position;
             speed = 800f;
-            sprite = Asset.playerSprite;
             cooldown = new TimeSpan(0, 0, 0, 0, 0);
+
+            // Sets the correct sprite depending on whether it's a client or the server
+            // making a player character.
+            if (GameWorld.Instance.SetUpServerPlayer)
+            {
+                PlayerHealth = 3;
+
+                sprite = Asset.playerSprite;
+                GameWorld.Instance.SetUpServerPlayer = false;
+            }
+            else
+            {
+                sprite = Asset.clientPlayerSprite;
+            }
         }
 
-        private void HandleInput()
+        private void HandleInput(Player player)
         {
             //Resets velocity
             //Makes sure that we will stop moving
@@ -37,7 +53,7 @@ namespace GruppeHessNetworkAssignment
             if (keyState.IsKeyDown(Keys.Left))
             {
                 //Move left if inside bounds.
-                if (Position.X >= 0)
+                if (player.Position.X >= 0)
                 {
                     velocity += new Vector2(-1, 0);
                 }
@@ -46,7 +62,7 @@ namespace GruppeHessNetworkAssignment
             if (keyState.IsKeyDown(Keys.Right))
             {
                 //Move right if inside bounds.
-                if (Position.X <= GameWorld.Instance.ScreenSize.X - sprite.Width)
+                if (player.Position.X <= GameWorld.Instance.ScreenSize.X - sprite.Width)
                 {
                     velocity += new Vector2(1, 0);
                 }
@@ -77,7 +93,7 @@ namespace GruppeHessNetworkAssignment
             }
 
             //If pressed a key, then we need to normalize the vector
-            //If we don't do this we will move faster 
+            //If we don't do this we will move faster
             //while pressing two keys at once
             if (velocity != Vector2.Zero)
             {
@@ -87,16 +103,6 @@ namespace GruppeHessNetworkAssignment
 
         public override void Update(GameTime gameTime)
         {
-            if (GameWorld.Instance.IsServer == false && GameWorld.Instance.ClientInstance.ReturnData != null)
-            {
-                string serverInput = GameWorld.Instance.ClientInstance.ReturnData;
-
-                if (serverInput.StartsWith("e"))
-                {
-                    Console.WriteLine(serverInput);
-                }
-            }
-
 
             if (GameWorld.Instance.IsServer == true && GameWorld.Instance.ServerInstance.ReturnData != null)
             {
@@ -113,9 +119,20 @@ namespace GruppeHessNetworkAssignment
                 }
             }
 
+            Player player;
+
+            if (GameWorld.Instance.IsServer)
+            {
+                player = GameWorld.Instance.PlayerServer;
+            }
             else
             {
-                HandleInput();
+                player = GameWorld.Instance.PlayerClient;
+            }
+
+            if (player != null)
+            {
+                HandleInput(player);
                 Move(gameTime);
 
                 if (cooldown > TimeSpan.Zero)
@@ -123,11 +140,21 @@ namespace GruppeHessNetworkAssignment
                     cooldown -= gameTime.ElapsedGameTime;
                 }
             }
+
+            if (GameWorld.Instance.PlayerServer.PlayerHealth <= 0)
+            {
+                Death();
+            }
         }
 
         public override void OnCollision(GameObject other)
         {
             // Player doesn't have any collision with anything.
+        }
+
+        public void Death()
+        {
+            // Insert end game lose shit. Maybe a loser screen (just a sprite font is fine).
         }
     }
 }

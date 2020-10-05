@@ -18,7 +18,7 @@ namespace GruppeHessNetworkAssignment
             speed = 300f;
             sprite = Asset.laserSprite;
         }
-        
+
         public override void OnCollision(GameObject other)
         {
             if (other is Enemy)
@@ -29,6 +29,9 @@ namespace GruppeHessNetworkAssignment
                 {
                     GameWorld.Instance.ServerInstance.Send("Destroy|" + other.ID);
                     //GameWorld.Instance.ServerInstance.Send("Destroy|" + this.ID);
+                    
+                    GameWorld.Instance.ServerInstance.Send("Point");
+                    Highscore.Instance.Points++;
                 }
                 else
                 {
@@ -42,7 +45,6 @@ namespace GruppeHessNetworkAssignment
         public override void Update(GameTime gameTime)
         {
             Move(gameTime);
-
         }
     }
 }

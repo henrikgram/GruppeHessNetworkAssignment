@@ -21,16 +21,27 @@ namespace GruppeHessNetworkAssignment
             sprite = Asset.enemySprite;
             //this.ID = shipID;
         }
-      
+
 
         public override void OnCollision(GameObject other)
         {
-            
+
         }
 
         public override void Update(GameTime gameTime)
         {
             Move(gameTime);
+
+            if (Position.Y > GameWorld.Instance.ScreenHeight + Asset.enemySprite.Height)
+            {
+                GameWorld.Destroy(this);
+
+                if (GameWorld.Instance.IsServer)
+                {
+                    GameWorld.Instance.ServerInstance.Send("Lose hp");
+                    GameWorld.Instance.PlayerServer.PlayerHealth--;
+                }
+            }
         }
     }
 }

@@ -17,6 +17,7 @@ namespace GruppeHessNetworkAssignment
         protected Texture2D sprite;
         protected Vector2 velocity;
         protected float speed;
+        protected SpriteFont spriteFont;
         //private int iD;
 
         //public int ID

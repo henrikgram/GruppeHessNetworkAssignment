@@ -20,7 +20,7 @@ namespace GruppeHessNetworkAssignment.Network
         private string returnData;
 
         public int Port { get => port; }
-        public string ReturnData { get => returnData; }
+        public string ReturnData { get => returnData; set => returnData = value; }
 
         private IPEndPoint remoteIpEndPoint; /*= new IPEndPoint(IPAddress.Any, 0);*/
         //private IPAddress tmpIPAdress;
@@ -93,6 +93,8 @@ namespace GruppeHessNetworkAssignment.Network
                     Console.WriteLine($"Server received: {returnData}");
                     //Console.WriteLine($"Message was sent from: {RemoteIpEndPoint.Address.ToString()} \nOn port number: {RemoteIpEndPoint.Port.ToString()}");
                     //Console.WriteLine();
+
+                    HandleOtherPlayer();
                 }
                 catch (Exception e)
                 {
@@ -132,7 +134,31 @@ namespace GruppeHessNetworkAssignment.Network
             Laser newLaser = new Laser(new Vector2(tmpX, tmpY));
             newLaser.ID = tmpID;
             GameWorld.Instance.Instantiate(newLaser);
+          }
 
+
+        public void HandleOtherPlayer()
+        {
+            if (GameWorld.Instance.IsServer == true && returnData != null && GameWorld.Instance.Instantiated)
+            {
+                string serverInput = returnData;
+
+                if (serverInput == "s")
+                {
+                    GameWorld.Instantiate(new Laser(new Vector2(GameWorld.Instance.PlayerClient.Position.X + Asset.clientPlayerSprite.Width / 2 - 5, GameWorld.Instance.PlayerClient.Position.Y - 30)));
+                }
+                //// Adds a new point once an enemy has been hit. "Point" is sent from the laser class.
+                //else if (serverInput == "Point")
+                //{
+                //    Highscore.Instance.Points++;
+                //}
+                else
+                {
+                    int test = test = Convert.ToInt32(Math.Round(Convert.ToDouble(returnData)));
+
+                    GameWorld.Instance.PlayerClient.Position = new Vector2(test, GameWorld.Instance.PlayerClient.Position.Y);
+                }
+            }
         }
     }
 }

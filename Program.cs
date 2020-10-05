@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 
 namespace GruppeHessNetworkAssignment
 {
@@ -8,6 +9,7 @@ namespace GruppeHessNetworkAssignment
     /// </summary>
     public static class Program
     {
+
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
