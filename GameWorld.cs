@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
+using System.Net.Sockets;
 using System.Threading;
 
 namespace GruppeHessNetworkAssignment
@@ -22,20 +23,22 @@ namespace GruppeHessNetworkAssignment
         private int screenHeight = 1000;
         public bool ProgramRunning { get; set; } = true;
 
-        private Server server;
-        private Client client;
+        private UdpServerManager udpServer;
+        private UdpClientManager udpClient;
+
         private static GameWorld instance;
         private Player player;
 
-        private bool startScreen = true;
-        private bool serverMode = false;
+        private bool isStartScreen = true;
+        private bool isServer = false;
+        private bool gameIsStarted = false;
 
 
         public static GameWorld Instance
         {
             get
             {
-                if(instance == null)
+                if (instance == null)
                 {
                     instance = new GameWorld();
                 }
@@ -78,44 +81,58 @@ namespace GruppeHessNetworkAssignment
         /// </summary>
         private void ServerClientSetup()
         {
-            while (startScreen == true)
+            while (isStartScreen == true)
             {
                 Console.WriteLine("Server (S) or Client (C)?");
                 string input = Console.ReadLine().ToUpper();
 
                 if (input == "S")
                 {
-                    // Instantiates the server, if the game starts in server mode.
+                    //Instantiates the server, if the game starts in server mode.
+                    new TcpServerManager();
 
-                  
-                    server = new Server();
-                    serverMode = true;
-                    startScreen = false;
-
-                    Console.WriteLine($"Server started on port: {server.Port} ");
-
-                    //server.Send((player.Position.X).ToString());
+                    isServer = true;
+                    isStartScreen = false;
                 }
 
                 else if (input == "C")
                 {
-                    // Instantiates a client, if the game starts in player mode.
+                    //Instantiates a client, if the game starts in client/player mode.
 
-                    Console.WriteLine("What port would you like to connect to?");
-                    client = new Client(Int32.Parse(Console.ReadLine()));
+                    //Console.WriteLine("What IP would you like to connect to?");
+                    //string ip = Console.ReadLine();
 
+                    //Console.WriteLine("What port would you like to connect to?");
+                    //string port = Console.ReadLine();
 
-                    serverMode = false;
-                    startScreen = false;
+                    //Console.WriteLine("Write the server password: ");
+                    //string password = Console.ReadLine();
 
-                    //client.Send((player.Position.X).ToString());
+                    //new TcpClientManager(ip, int.Parse(port), password);
+
+                    new TcpClientManager("192.168.87.159", /*11000,*/ "12345678");
+
+                    isServer = false;
+                    isStartScreen = false;
                 }
 
                 else
                 {
                     Console.WriteLine("Invalid input.");
-                    startScreen = true;
+                    isStartScreen = true;
                 }
+            }
+
+            if (isServer)
+            {
+                udpServer = new UdpServerManager();
+                gameIsStarted = true;
+            }
+
+            else if (!isServer)
+            {
+                udpClient = new UdpClientManager();
+                gameIsStarted = true;
             }
         }
 
@@ -125,15 +142,18 @@ namespace GruppeHessNetworkAssignment
         /// </summary>
         protected override void LoadContent()
         {
-            // Create a new SpriteBatch, which can be used to draw textures.
-            spriteBatch = new SpriteBatch(GraphicsDevice);
-
-            Asset.LoadContent(Content);
-
-            gameObjects.Add(player = new Player(new Vector2(ScreenSize.X/2, ScreenSize.Y-Asset.playerSprite.Height)));
-            gameObjects.Add(new Enemy(new Vector2(300, 300)));
-
             // TODO: use this.Content to load your game content here
+
+            if (gameIsStarted)
+            {
+                // Create a new SpriteBatch, which can be used to draw textures.
+                spriteBatch = new SpriteBatch(GraphicsDevice);
+
+                Asset.LoadContent(Content);
+
+                gameObjects.Add(player = new Player(new Vector2(ScreenSize.X / 2, ScreenSize.Y - Asset.playerSprite.Height)));
+                gameObjects.Add(new Enemy(new Vector2(300, 300)));
+            }
         }
 
         /// <summary>
@@ -152,58 +172,65 @@ namespace GruppeHessNetworkAssignment
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-           
-
-           
-
-            if (serverMode)
-            {
-                server.Send((player.Position.X).ToString());
-            }
-
-            if (!serverMode)
-            {
-                client.Send((player.Position.X).ToString());
-            }
-
+            // TODO: Add your update logic here
 
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
             {
                 Exit();
             }
 
-            //ads all objects in list-newobjects to list-gameobjects.
-            gameObjects.AddRange(newGameObjects);
-
-            foreach (GameObject deletedObject in deletedGameObjects)
+            if (gameIsStarted)
             {
-                gameObjects.Remove(deletedObject);
-            }
-
-            //deletes objects in list-deleteobjects.
-            deletedGameObjects.Clear();
-            //deletes objects in list-newobjects.
-            newGameObjects.Clear();
-
-
-            foreach (GameObject gameObject in gameObjects)
-            {
-                gameObject.Update(gameTime);
-
-                foreach (GameObject other in gameObjects)
+                if (isServer)
                 {
-                    gameObject.CheckCollision(other);
+                    udpServer.Send(player.Position.X.ToString());
+                }
+
+                else if (!isServer)
+                {
+                    udpClient.Send(player.Position.X.ToString());
+                }
+
+                else
+                {
+                    Console.WriteLine("Something went wrong...");
+
+                    isServer = false;
+                    isStartScreen = true;
+                    gameIsStarted = false;
+                }
+
+                //ads all objects in list-newobjects to list-gameobjects.
+                gameObjects.AddRange(newGameObjects);
+
+                foreach (GameObject deletedObject in deletedGameObjects)
+                {
+                    gameObjects.Remove(deletedObject);
+                }
+
+                //deletes objects in list-deleteobjects.
+                deletedGameObjects.Clear();
+                //deletes objects in list-newobjects.
+                newGameObjects.Clear();
+
+
+                foreach (GameObject gameObject in gameObjects)
+                {
+                    gameObject.Update(gameTime);
+
+                    foreach (GameObject other in gameObjects)
+                    {
+                        gameObject.CheckCollision(other);
+                    }
+                }
+
+                AddNewEnemyShips();
+
+                if (timeTillNewInvasionForce > TimeSpan.Zero)
+                {
+                    timeTillNewInvasionForce -= gameTime.ElapsedGameTime;
                 }
             }
-
-            AddNewEnemyShips();
-
-            if (timeTillNewInvasionForce > TimeSpan.Zero)
-            {
-                timeTillNewInvasionForce -= gameTime.ElapsedGameTime;
-            }
-
-            // TODO: Add your update logic here
 
             base.Update(gameTime);
         }
@@ -216,15 +243,21 @@ namespace GruppeHessNetworkAssignment
         {
             GraphicsDevice.Clear(Color.Black);
 
-            spriteBatch.Begin();
             // TODO: Add your drawing code here
-            foreach (GameObject gameObject in gameObjects)
-            {
-                gameObject.Draw(spriteBatch);
-                DrawCollisionBox(gameObject);
-            }
 
-            spriteBatch.End();
+            if (gameIsStarted)
+            {
+
+                spriteBatch.Begin();
+
+                foreach (GameObject gameObject in gameObjects)
+                {
+                    gameObject.Draw(spriteBatch);
+                    DrawCollisionBox(gameObject);
+                }
+
+                spriteBatch.End();
+            }
 
             base.Draw(gameTime);
         }
