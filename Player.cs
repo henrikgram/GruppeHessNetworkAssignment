@@ -14,10 +14,11 @@ namespace GruppeHessNetworkAssignment
     public class Player : GameObject
     {
         private bool canShoot = true;
+        private bool playerIsSet = false;
         private TimeSpan cooldown;
+        private Player player;
 
         public int PlayerHealth { get; set; }
-
 
         public Player(Vector2 position)
         {
@@ -27,15 +28,18 @@ namespace GruppeHessNetworkAssignment
 
             // Sets the correct sprite depending on whether it's a client or the server
             // making a player character.
+            // SetUpServerPlayer becomes true in GameWorld if the game is run in server-mode.
             if (GameWorld.Instance.SetUpServerPlayer)
             {
+                // If server.
                 PlayerHealth = 3;
-
                 sprite = Asset.playerSprite;
+                // Sets SetUpServerPlayer to falls to make sure we can continue in our code once the setup is over.
                 GameWorld.Instance.SetUpServerPlayer = false;
             }
             else
             {
+                // If client.
                 sprite = Asset.clientPlayerSprite;
             }
         }
@@ -50,7 +54,8 @@ namespace GruppeHessNetworkAssignment
             //Get the current keyboard state
             KeyboardState keyState = Keyboard.GetState();
 
-            if (keyState.IsKeyDown(Keys.Left))
+            if (keyState.IsKeyDown(Keys.Left) && GameWorld.Instance.IsServer && GameWorld.Instance.PlayerServer == this ||
+                keyState.IsKeyDown(Keys.Left) && !GameWorld.Instance.IsServer && GameWorld.Instance.PlayerClient == this)
             {
                 //Move left if inside bounds.
                 if (player.Position.X >= 0)
@@ -59,7 +64,8 @@ namespace GruppeHessNetworkAssignment
                 }
             }
 
-            if (keyState.IsKeyDown(Keys.Right))
+            if (keyState.IsKeyDown(Keys.Right) && GameWorld.Instance.IsServer && GameWorld.Instance.PlayerServer == this ||
+                keyState.IsKeyDown(Keys.Right) && !GameWorld.Instance.IsServer && GameWorld.Instance.PlayerClient == this)
             {
                 //Move right if inside bounds.
                 if (player.Position.X <= GameWorld.Instance.ScreenSize.X - sprite.Width)
@@ -70,27 +76,29 @@ namespace GruppeHessNetworkAssignment
 
             if (keyState.IsKeyDown(Keys.Space) && canShoot)
             {
-                //Laser newLaser;
-
+                // Creates a Laser object with a position.
                 Laser newLaser = new Laser(new Vector2(player.Position.X + sprite.Width / 2 - 5, player.Position.Y - 30));
 
-                if (!GameWorld.Instance.IsServer)
+                // Client shoot.
+                if (!GameWorld.Instance.IsServer && GameWorld.Instance.PlayerClient == this)
                 {
-                    // Shoot
-                    //newLaser = new Laser(new Vector2(GameWorld.Instance.PlayerClient.Position.X + Asset.playerSprite.Width / 2 - 5, GameWorld.Instance.PlayerClient.Position.Y - 30));
+                    // Shoot, instantiates the created laser on the correct player ship.
+                    // In this case, the client-player.
+                    GameWorld.Instance.Instantiate(newLaser);
+                    // Sends the information to the server.
                     GameWorld.Instance.ClientInstance.Send("New|Laser|" + newLaser.ID + "|" + newLaser.Position.X + "|" + newLaser.Position.Y);
                     Console.WriteLine("New Laser : ID : " + newLaser.ID + " Position : " + newLaser.Position.ToString());
                 }
-
-                if (GameWorld.Instance.IsServer)
+                // Server shoot.
+                if (GameWorld.Instance.IsServer && GameWorld.Instance.PlayerServer == this)
                 {
-                    //newLaser = new Laser(new Vector2(GameWorld.Instance.PlayerServer.Position.X + Asset.playerSprite.Width / 2 - 5, GameWorld.Instance.PlayerServer.Position.Y - 30));
+                    // Shoot, instantiates the created laser on the correct player ship.
+                    // In this case, the server-player.
+                    GameWorld.Instance.Instantiate(newLaser);
+                    // Sends the information to the client.
                     GameWorld.Instance.ServerInstance.Send("New|Laser|" + newLaser.ID + "|" + newLaser.Position.X + "|" + newLaser.Position.Y);
                 }
 
-                GameWorld.Instance.Instantiate(newLaser);
-
-                // Client sends a message to the server, so the server knows to shoot from the player as well.
                 // Two next functions make sure shoot has a cool down.
                 canShoot = false;
                 cooldown = new TimeSpan(0, 0, 0, 0, 100);
@@ -114,44 +122,38 @@ namespace GruppeHessNetworkAssignment
 
         public override void Update(GameTime gameTime)
         {
-
-            //if (GameWorld.Instance.IsServer == true && GameWorld.Instance.ServerInstance.ReturnData != null)
-            //{
-            //    string serverInput = GameWorld.Instance.ServerInstance.ReturnData;
-
-            //    if (serverInput.Contains("Update|Player"))
-            //    {
-            //        string[] inputParameters = serverInput.Split('|');
-
-            //        float playPosX = float.Parse(inputParameters[2]);
-            //        float playposY = float.Parse(inputParameters[3]);
-
-            //        Position = new Vector2(playPosX, playposY);
-            //    }
-            //}
-
-            Player player;
-
-            if (GameWorld.Instance.IsServer)
+            // Sets player to a certain player,
+            // depending on whether the game is running as a server or client.
+            if(!playerIsSet)
             {
-                player = GameWorld.Instance.PlayerServer;
-            }
-            else
-            {
-                player = GameWorld.Instance.PlayerClient;
+                if (GameWorld.Instance.IsServer)
+                {
+                    // If server.
+                    player = GameWorld.Instance.PlayerServer;
+                }
+                else
+                {
+                    // If client.
+                    player = GameWorld.Instance.PlayerClient;
+                }
+                // Makes sure we only set player once during runtime.
+                playerIsSet = true;
             }
 
+            // Only runs if player isn't null. Makes sure we get no weird exceptions/errors.
             if (player != null)
             {
                 HandleInput(player);
                 Move(gameTime);
 
+                // Cooldown counter.
                 if (cooldown > TimeSpan.Zero)
                 {
                     cooldown -= gameTime.ElapsedGameTime;
                 }
             }
 
+            // Makes sure the players die if their shared hp reaches 0.
             if (GameWorld.Instance.PlayerServer.PlayerHealth <= 0)
             {
                 Death();
