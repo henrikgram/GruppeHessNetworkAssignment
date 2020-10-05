@@ -4,6 +4,8 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
+using System.Reflection;
 using System.Threading;
 
 namespace GruppeHessNetworkAssignment
@@ -13,40 +15,52 @@ namespace GruppeHessNetworkAssignment
     /// </summary>
     public class GameWorld : Game
     {
+        GraphicsDeviceManager graphics;
+        SpriteBatch spriteBatch;
+
+        // Lists of gameobjects.
         private List<GameObject> gameObjects = new List<GameObject>();
         private static List<GameObject> newGameObjects = new List<GameObject>();
         private static List<GameObject> deletedGameObjects = new List<GameObject>();
 
         private TimeSpan timeTillNewInvasionForce = TimeSpan.Zero;
-        private Random rnd = new Random();
-        private int screenHeight = 1000;
-        public bool ProgramRunning { get; set; } = true;
+        private Random rnd = new Random(500);
 
         private Server server;
         private Client client;
         private static GameWorld instance;
-        private Player player;
+        private Highscore highscore;
 
         private bool startScreen = true;
-        private bool serverMode = false;
+        private bool isServer = false;
+        private byte maxPlayers = 1;
+
+        public Player PlayerServer { get; private set; }
+        public Player PlayerClient { get; private set; }
+        public Client ClientInstance { get => client; set => client = value; }
+        public Server ServerInstance { get => server; set => server = value; }
+        public bool Instantiated { get; set; } = false;
+        public byte PlayerCount { get; set; } = 0;
+        public int ScreenHeight { get; } = 1000;
+        public bool ProgramRunning { get; set; } = true;
+        public bool IsServer { get => isServer; }
+        public bool SetUpServerPlayer { get; set; }
+        public Vector2 ScreenSize { get; private set; }
+
+        private float tickTimer = 3;
 
 
         public static GameWorld Instance
         {
             get
             {
-                if(instance == null)
+                if (instance == null)
                 {
                     instance = new GameWorld();
                 }
                 return instance;
             }
         }
-
-        public Vector2 ScreenSize { get; private set; }
-
-        GraphicsDeviceManager graphics;
-        SpriteBatch spriteBatch;
 
         public GameWorld()
         {
@@ -65,7 +79,7 @@ namespace GruppeHessNetworkAssignment
             ServerClientSetup();
 
             // CHANGES THE SCREEN SIZE.
-            graphics.PreferredBackBufferHeight = screenHeight;
+            graphics.PreferredBackBufferHeight = ScreenHeight;
             graphics.ApplyChanges();
             ScreenSize = new Vector2(graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight);
 
@@ -86,13 +100,12 @@ namespace GruppeHessNetworkAssignment
                 if (input == "S")
                 {
                     // Instantiates the server, if the game starts in server mode.
-
-                  
                     server = new Server();
-                    serverMode = true;
+                    highscore = new Highscore();
+                    isServer = true;
                     startScreen = false;
 
-                    Console.WriteLine($"Server started on port: {server.Port} ");
+                    //Console.WriteLine($"Server started on port: {server.Port} ");
 
                     //server.Send((player.Position.X).ToString());
                 }
@@ -104,8 +117,7 @@ namespace GruppeHessNetworkAssignment
                     Console.WriteLine("What port would you like to connect to?");
                     client = new Client(Int32.Parse(Console.ReadLine()));
 
-
-                    serverMode = false;
+                    isServer = false;
                     startScreen = false;
 
                     //client.Send((player.Position.X).ToString());
@@ -130,8 +142,8 @@ namespace GruppeHessNetworkAssignment
 
             Asset.LoadContent(Content);
 
-            gameObjects.Add(player = new Player(new Vector2(ScreenSize.X/2, ScreenSize.Y-Asset.playerSprite.Height)));
-            gameObjects.Add(new Enemy(new Vector2(300, 300)));
+            //gameObjects.Add(player = new Player(new Vector2(ScreenSize.X/2, ScreenSize.Y-Asset.playerSprite.Height)));
+            //gameObjects.Add(new Enemy(new Vector2(300, 300)));
 
             // TODO: use this.Content to load your game content here
         }
@@ -152,60 +164,90 @@ namespace GruppeHessNetworkAssignment
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-           
-
-           
-
-            if (serverMode)
+            // Makes sure the PlayerCount goes up everytime a new player joins the game.
+            // In the Client constructor, the message P is send everytime a new client is added.
+            if (IsServer && ServerInstance.ReturnData == "P")
             {
-                server.Send((player.Position.X).ToString());
+                PlayerCount++;
+                // Resets ReturnData, so this message doesn't have to be in Player as an empty "else if" sentence.
+                ServerInstance.ReturnData = null;
             }
 
-            if (!serverMode)
+            // Once the max amount of players has joined, the game can start.
+            if (PlayerCount == maxPlayers)
             {
-                client.Send((player.Position.X).ToString());
-            }
-
-
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
-            {
-                Exit();
-            }
-
-            //ads all objects in list-newobjects to list-gameobjects.
-            gameObjects.AddRange(newGameObjects);
-
-            foreach (GameObject deletedObject in deletedGameObjects)
-            {
-                gameObjects.Remove(deletedObject);
-            }
-
-            //deletes objects in list-deleteobjects.
-            deletedGameObjects.Clear();
-            //deletes objects in list-newobjects.
-            newGameObjects.Clear();
-
-
-            foreach (GameObject gameObject in gameObjects)
-            {
-                gameObject.Update(gameTime);
-
-                foreach (GameObject other in gameObjects)
+                // Only draws the player once all players has joined the game.
+                // For server below.
+                //if (isServer && !Instantiated)
+                //{
+                //    gameObjects.Add(PlayerServer = new Player(new Vector2(0, ScreenSize.Y - Asset.playerSprite.Height)));
+                //    Instantiated = true;
+                //}
+                // Only draws the player once all players has joined the game.
+                // For client below.
+                if (/*!isServer && */!Instantiated)
                 {
-                    gameObject.CheckCollision(other);
+                    SetUpServerPlayer = true;
+                    gameObjects.Add(PlayerServer = new Player(new Vector2(0, ScreenSize.Y - Asset.playerSprite.Height)));
+                    gameObjects.Add(PlayerClient = new Player(new Vector2(ScreenSize.X - Asset.clientPlayerSprite.Width, ScreenSize.Y - Asset.clientPlayerSprite.Height)));
+                   
+                    Instantiated = true;
                 }
+
+                //For two player, so the server can send a pos back to the client.
+                if (isServer)
+                {
+                    server.Send(PlayerServer.Position.X.ToString());
+                }
+
+                // Makes sure the client sends the player's updated position to the server.
+                if (!isServer)
+                {
+                    client.Send(PlayerClient.Position.X.ToString());
+                }
+
+                // To exit the game.
+                if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
+                {
+                    // Makes sure all the threads stop running.
+                    ProgramRunning = false;
+                    Exit();
+                }
+
+                //ads all objects in list-newobjects to list-gameobjects.
+                gameObjects.AddRange(newGameObjects);
+
+                foreach (GameObject deletedObject in deletedGameObjects)
+                {
+                    gameObjects.Remove(deletedObject);
+                }
+
+                //deletes objects in list-deleteobjects.
+                deletedGameObjects.Clear();
+                //deletes objects in list-newobjects.
+                newGameObjects.Clear();
+
+                foreach (GameObject gameObject in gameObjects)
+                {
+                    gameObject.Update(gameTime);
+
+                    foreach (GameObject other in gameObjects)
+                    {
+                        gameObject.CheckCollision(other);
+                    }
+                }
+
+                AddNewEnemyShips();
+
+                if (timeTillNewInvasionForce > TimeSpan.Zero)
+                {
+                    timeTillNewInvasionForce -= gameTime.ElapsedGameTime;
+                }
+
+                // TODO: Add your update logic here
+
+                base.Update(gameTime);
             }
-
-            AddNewEnemyShips();
-
-            if (timeTillNewInvasionForce > TimeSpan.Zero)
-            {
-                timeTillNewInvasionForce -= gameTime.ElapsedGameTime;
-            }
-
-            // TODO: Add your update logic here
-
-            base.Update(gameTime);
         }
 
         /// <summary>
@@ -217,6 +259,13 @@ namespace GruppeHessNetworkAssignment
             GraphicsDevice.Clear(Color.Black);
 
             spriteBatch.Begin();
+
+            if (Instantiated)
+            {
+                spriteBatch.DrawString(Asset.scoreFont, $"Points: {Highscore.Instance.Points}", new Vector2(0, ScreenHeight / 25), Color.DarkRed, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
+                spriteBatch.DrawString(Asset.scoreFont, $"Health: {PlayerServer.PlayerHealth}", new Vector2(0, 0), Color.DarkBlue, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
+            }
+
             // TODO: Add your drawing code here
             foreach (GameObject gameObject in gameObjects)
             {

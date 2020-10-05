@@ -26,13 +26,19 @@ namespace GruppeHessNetworkAssignment
                 // Destroys the laser and the enemy once collision between aforementioned GameObjects happens.
                 GameWorld.Destroy(other);
                 GameWorld.Destroy(this);
+
+                // If we're on a server, information is sent to the server so we can add a point.
+                if (GameWorld.Instance.IsServer)
+                {
+                    GameWorld.Instance.ServerInstance.Send("Point");
+                    Highscore.Instance.Points++;
+                }
             }
         }
 
         public override void Update(GameTime gameTime)
         {
             Move(gameTime);
-
         }
     }
 }

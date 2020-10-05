@@ -16,6 +16,7 @@ namespace GruppeHessNetworkAssignment
         protected Texture2D sprite;
         protected Vector2 velocity;
         protected float speed;
+        protected SpriteFont spriteFont;
 
         public virtual Rectangle CollisionBox
         {

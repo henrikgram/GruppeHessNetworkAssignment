@@ -17,8 +17,7 @@ namespace GruppeHessNetworkAssignment
             velocity = new Vector2(0, 1);
             speed = 100f;
             sprite = Asset.enemySprite;
-        }
-      
+        }  
 
         public override void OnCollision(GameObject other)
         {
@@ -29,6 +28,16 @@ namespace GruppeHessNetworkAssignment
         {
             Move(gameTime);
 
+            if (Position.Y > GameWorld.Instance.ScreenHeight + Asset.enemySprite.Height)
+            {
+                GameWorld.Destroy(this);
+
+                if (GameWorld.Instance.IsServer)
+                {
+                    GameWorld.Instance.ServerInstance.Send("Lose hp");
+                    GameWorld.Instance.PlayerServer.PlayerHealth--;
+                }
+            }
         }
     }
 }

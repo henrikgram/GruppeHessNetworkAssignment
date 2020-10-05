@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -14,6 +15,9 @@ namespace GruppeHessNetworkAssignment
         public static Texture2D enemySprite;
         public static Texture2D collisionBox;
         public static Texture2D laserSprite;
+        public static Texture2D clientPlayerSprite;
+
+        public static SpriteFont scoreFont;
 
         public static void LoadContent(ContentManager content)
         {
@@ -21,7 +25,9 @@ namespace GruppeHessNetworkAssignment
             enemySprite = content.Load<Texture2D>("enemyBlack1");
             collisionBox = content.Load<Texture2D>("CollisionBox");
             laserSprite = content.Load<Texture2D>("laserGreen05");
-        }
+            clientPlayerSprite = content.Load<Texture2D>("playerShip1_red");
 
+            scoreFont = content.Load<SpriteFont>("ScoreFont");
+        }
     }
 }

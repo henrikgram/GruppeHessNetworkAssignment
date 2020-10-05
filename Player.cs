@@ -11,20 +11,36 @@ using System.Threading.Tasks;
 
 namespace GruppeHessNetworkAssignment
 {
-    class Player : GameObject
+    public class Player : GameObject
     {
         private bool canShoot = true;
         private TimeSpan cooldown;
+
+        public int PlayerHealth { get; set; }
+
 
         public Player(Vector2 position)
         {
             this.Position = position;
             speed = 800f;
-            sprite = Asset.playerSprite;
             cooldown = new TimeSpan(0, 0, 0, 0, 0);
+
+            // Sets the correct sprite depending on whether it's a client or the server
+            // making a player character.
+            if (GameWorld.Instance.SetUpServerPlayer)
+            {
+                PlayerHealth = 3;
+
+                sprite = Asset.playerSprite;
+                GameWorld.Instance.SetUpServerPlayer = false;
+            }
+            else
+            {
+                sprite = Asset.clientPlayerSprite;
+            }
         }
 
-        private void HandleInput()
+        private void HandleInput(Player player)
         {
             //Resets velocity
             //Makes sure that we will stop moving
@@ -37,7 +53,7 @@ namespace GruppeHessNetworkAssignment
             if (keyState.IsKeyDown(Keys.Left))
             {
                 //Move left if inside bounds.
-                if (Position.X >= 0)
+                if (player.Position.X >= 0)
                 {
                     velocity += new Vector2(-1, 0);
                 }
@@ -46,7 +62,7 @@ namespace GruppeHessNetworkAssignment
             if (keyState.IsKeyDown(Keys.Right))
             {
                 //Move right if inside bounds.
-                if (Position.X <= GameWorld.Instance.ScreenSize.X - sprite.Width)
+                if (player.Position.X <= GameWorld.Instance.ScreenSize.X - sprite.Width)
                 {
                     velocity += new Vector2(1, 0);
                 }
@@ -54,8 +70,22 @@ namespace GruppeHessNetworkAssignment
 
             if (keyState.IsKeyDown(Keys.Space) && canShoot)
             {
-                // Shoot
-                GameWorld.Instantiate(new Laser(new Vector2(Position.X+Asset.playerSprite.Width/2 - 5,Position.Y - 30)));
+                // Shoot       
+                GameWorld.Instantiate(new Laser(new Vector2(player.Position.X + sprite.Width / 2 - 5, player.Position.Y - 30)));
+
+                // If we're on the server, send "s" from the server to the client.
+                if (GameWorld.Instance.IsServer)
+                {
+                    GameWorld.Instance.ServerInstance.Send("s");
+                }
+                // If we're a client, send "s" from the client to the server.
+                else
+                {
+                    // Client sends a message to the server, so the server knows to shoot from the player as well.
+                    GameWorld.Instance.ClientInstance.Send("s");
+                }
+
+                // Two next functions make sure shoot has a cool down.
                 canShoot = false;
                 cooldown = new TimeSpan(0, 0, 0, 0, 100);
             }
@@ -63,6 +93,7 @@ namespace GruppeHessNetworkAssignment
             // Gives the shoot function a cooldown, so the player can't shoot endlessly.
             if (keyState.IsKeyUp(Keys.Space) && cooldown <= TimeSpan.Zero)
             {
+                // Once the cool down reaches 0, the player can shoot again.
                 canShoot = true;
             }
 
@@ -77,18 +108,42 @@ namespace GruppeHessNetworkAssignment
 
         public override void Update(GameTime gameTime)
         {
-            HandleInput();
-            Move(gameTime);
+            Player player;
 
-            if (cooldown > TimeSpan.Zero)
+            if (GameWorld.Instance.IsServer)
             {
-                cooldown -= gameTime.ElapsedGameTime;
+                player = GameWorld.Instance.PlayerServer;
+            }
+            else
+            {
+                player = GameWorld.Instance.PlayerClient;
+            }
+
+            if (player != null)
+            {
+                HandleInput(player);
+                Move(gameTime);
+
+                if (cooldown > TimeSpan.Zero)
+                {
+                    cooldown -= gameTime.ElapsedGameTime;
+                }
+            }
+
+            if (GameWorld.Instance.PlayerServer.PlayerHealth <= 0)
+            {
+                Death();
             }
         }
 
         public override void OnCollision(GameObject other)
         {
             // Player doesn't have any collision with anything.
+        }
+
+        public void Death()
+        {
+            // Insert end game lose shit. Maybe a loser screen (just a sprite font is fine).
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework.Input;
+﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,56 +11,43 @@ using System.Threading.Tasks;
 
 namespace GruppeHessNetworkAssignment.Network
 {
-    class Server
+    public class Server
     {
         private static int port = 11000;
 
-        private  UdpClient receivingUdpClient = new UdpClient(port);
-        private  UdpClient udpClient = new UdpClient();
+        private UdpClient receivingUdpClient = new UdpClient(port);
+        private UdpClient udpClient = new UdpClient();
+        private string returnData;
 
         public int Port { get => port; }
+        public string ReturnData { get => returnData; set => returnData = value; }
 
-        private static IPEndPoint RemoteIpEndPoint = new IPEndPoint(IPAddress.Any, 0);
+        private IPEndPoint remoteIpEndPoint; /*= new IPEndPoint(IPAddress.Any, 0);*/
+        //private IPAddress tmpIPAdress;
+        //private int tmpPort;
 
-        private string remoteAdress;
-        //private int remotePort;
-
-
-        public Server ()
+        public Server()
         {
             Thread receivingThread = new Thread(Recieve);
             receivingThread.IsBackground = true;
             receivingThread.Start();
-
-            //Thread sendingThread = new Thread(SendMethod);
-            //sendingThread.IsBackground = true;
-            //sendingThread.Start();
         }
 
         /// <summary>
-        /// Receives information from players (clients).
+        /// This send information to the players (clients).
         /// </summary>
-        private void Recieve()
+        public void Send(string message)
         {
-            Console.WriteLine("Waiting for a connection...");
-
-            while (GameWorld.Instance.ProgramRunning)
+            //if (tmpIPAdress.ToString() != "0.0.0.0")
             {
-                RemoteIpEndPoint = new IPEndPoint(IPAddress.Any, 0);
-
-                remoteAdress = RemoteIpEndPoint.Address.ToString();
-                //remotePort = RemoteIpEndPoint.Port;
-
                 try
                 {
-                    //// Blocks until a message returns on this socket from a remote host.
-                    Byte[] receiveBytes = receivingUdpClient.Receive(ref RemoteIpEndPoint);
+                    //udpClient.Connect(RemoteIpEndPoint.Address, RemoteIpEndPoint.Port);
+                    //udpClient.Connect(tmpIPAdress, tmpPort);
+                    udpClient.Connect("127.0.0.1", 13000);
 
-                    string returnData = Encoding.UTF8.GetString(receiveBytes);
-
-                    Console.WriteLine($"Server received: {returnData}");
-                    //Console.WriteLine($"Message was sent from: {RemoteIpEndPoint.Address.ToString()} \nOn port number: {RemoteIpEndPoint.Port.ToString()}");
-                    //Console.WriteLine();
+                    Byte[] sendBytes = Encoding.ASCII.GetBytes(message);
+                    udpClient.Send(sendBytes, sendBytes.Length);
                 }
                 catch (Exception e)
                 {
@@ -70,33 +58,65 @@ namespace GruppeHessNetworkAssignment.Network
         }
 
         /// <summary>
-        /// This send information to the players (clients).
+        /// Receives information from players (clients).
         /// </summary>
-        public void Send(string message)
+        private void Recieve()
         {
-            // Makes sure the thread keeps running until the game is closed.
-            //while (GameWorld.Instance.ProgramRunning)
+            Console.WriteLine("Waiting for a connection...");
+
+            // This bool becomes false when the player exits the game.
+            // Makes sure the thread dies so the game can shut down properly.
+            while (GameWorld.Instance.ProgramRunning)
             {
-                //tmpIPAddress = RemoteIpEndPoint.Address;
-
-                if (remoteAdress != "0.0.0.0")
+                remoteIpEndPoint = new IPEndPoint(IPAddress.Any, 0);
+                //tmpIPAdress = remoteIpEndPoint.Address;
+                //tmpPort = remoteIpEndPoint.Port;
+                
+                try
                 {
-                    try
-                    {
-                        udpClient.Connect(RemoteIpEndPoint.Address, RemoteIpEndPoint.Port);
+                    //// Blocks until a message returns on this socket from a remote host.
+                    Byte[] receiveBytes = receivingUdpClient.Receive(ref remoteIpEndPoint);
 
-                        //udpClient.Connect("192.168.87.130" , 13000);
+                    returnData = Encoding.ASCII.GetString(receiveBytes);
 
-                        //message = "Hvaså smukke pige skal du ind i mujaffas bmw?";
+                    //test = Convert.ToInt32(Math.Round(Convert.ToDouble(returnData)));
 
-                        Byte[] sendBytes = Encoding.UTF8.GetBytes(message);
-                        udpClient.Send(sendBytes, sendBytes.Length);
-                    }
-                    catch (Exception e)
-                    {
-                        // Writes out the exception if any errors occur.
-                        Console.WriteLine(e.ToString());
-                    }
+                    //Console.WriteLine($"Test: {test}");
+
+                    Console.WriteLine($"Server received: {returnData}");
+                    //Console.WriteLine($"Message was sent from: {RemoteIpEndPoint.Address.ToString()} \nOn port number: {RemoteIpEndPoint.Port.ToString()}");
+                    //Console.WriteLine();
+
+                    HandleOtherPlayer();
+                }
+                catch (Exception e)
+                {
+                    // Writes out the exception if any errors occur.
+                    Console.WriteLine(e.ToString());
+                }
+            }
+        }
+
+        public void HandleOtherPlayer()
+        {
+            if (GameWorld.Instance.IsServer == true && returnData != null && GameWorld.Instance.Instantiated)
+            {
+                string serverInput = returnData;
+
+                if (serverInput == "s")
+                {
+                    GameWorld.Instantiate(new Laser(new Vector2(GameWorld.Instance.PlayerClient.Position.X + Asset.clientPlayerSprite.Width / 2 - 5, GameWorld.Instance.PlayerClient.Position.Y - 30)));
+                }
+                //// Adds a new point once an enemy has been hit. "Point" is sent from the laser class.
+                //else if (serverInput == "Point")
+                //{
+                //    Highscore.Instance.Points++;
+                //}
+                else
+                {
+                    int test = test = Convert.ToInt32(Math.Round(Convert.ToDouble(returnData)));
+
+                    GameWorld.Instance.PlayerClient.Position = new Vector2(test, GameWorld.Instance.PlayerClient.Position.Y);
                 }
             }
         }
