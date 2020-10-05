@@ -22,10 +22,11 @@ namespace GruppeHessNetworkAssignment
         public static void LoadContent(ContentManager content)
         {
             playerSprite = content.Load<Texture2D>("1fwd");
+            clientPlayerSprite = content.Load<Texture2D>("1fwd");
+            laserSprite = content.Load<Texture2D>("laserGreen05");
+
             enemySprite = content.Load<Texture2D>("enemyBlack1");
             collisionBox = content.Load<Texture2D>("CollisionBox");
-            laserSprite = content.Load<Texture2D>("laserGreen05");
-            clientPlayerSprite = content.Load<Texture2D>("playerShip1_red");
 
             scoreFont = content.Load<SpriteFont>("ScoreFont");
         }
