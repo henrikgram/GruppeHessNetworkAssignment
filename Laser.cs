@@ -29,7 +29,7 @@ namespace GruppeHessNetworkAssignment
                 if (GameWorld.Instance.IsServer)
                 {
                     GameWorld.Instance.ServerInstance.Send("Destroy|" + other.ID);
-                    //GameWorld.Instance.ServerInstance.Send("Destroy|" + this.ID);
+                    GameWorld.Instance.ServerInstance.Send("Destroy|" + this.ID);
                     
                     GameWorld.Instance.ServerInstance.Send("Point");
                     Highscore.Instance.Points++;
@@ -37,7 +37,7 @@ namespace GruppeHessNetworkAssignment
                 else
                 {
                     GameWorld.Instance.ClientInstance.Send("Destroy|" + other.ID);
-                    //GameWorld.Instance.ClientInstance.Send("Destroy|" + this.ID);
+                    GameWorld.Instance.ClientInstance.Send("Destroy|" + this.ID);
                 }
 
                 GameWorld.Instance.Destroy(this);
@@ -47,6 +47,11 @@ namespace GruppeHessNetworkAssignment
         public override void Update(GameTime gameTime)
         {
             Move(gameTime);
+
+            if (Position.Y < 0 - Asset.laserSprite.Height)
+            {
+                GameWorld.Instance.Destroy(this);
+            }
         }
     }
 }

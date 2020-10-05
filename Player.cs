@@ -87,7 +87,7 @@ namespace GruppeHessNetworkAssignment
                     GameWorld.Instance.Instantiate(newLaser);
                     // Sends the information to the server.
                     GameWorld.Instance.ClientInstance.Send("New|Laser|" + newLaser.ID + "|" + newLaser.Position.X + "|" + newLaser.Position.Y);
-                    Console.WriteLine("New Laser : ID : " + newLaser.ID + " Position : " + newLaser.Position.ToString());
+                    //Console.WriteLine("New Laser : ID : " + newLaser.ID + " Position : " + newLaser.Position.ToString());
                 }
                 // Server shoot.
                 if (GameWorld.Instance.IsServer && GameWorld.Instance.PlayerServer == this)

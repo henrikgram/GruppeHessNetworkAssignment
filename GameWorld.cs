@@ -24,7 +24,7 @@ namespace GruppeHessNetworkAssignment
         private List<GameObject> newGameObjects = new List<GameObject>();
         private List<GameObject> deletedGameObjects = new List<GameObject>();
 
-        private TimeSpan timeTillNewInvasionForce = new TimeSpan(0, 0, 0);
+        private TimeSpan timeTillNewInvasionForce = new TimeSpan(0, 0, 2);
         private Random rnd = new Random(500);
         private int screenHeight = 1000;
 
