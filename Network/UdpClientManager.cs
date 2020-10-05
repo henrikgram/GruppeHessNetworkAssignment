@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace GruppeHessNetworkAssignment.Network
 {
-    public class Client
+    public class UdpClientManager
     {
         private static int port = 13000;
         private int serverPort;
@@ -26,7 +26,7 @@ namespace GruppeHessNetworkAssignment.Network
             set { returnData = value; }
         }
 
-        public Client(int port)
+        public UdpClientManager(int port)
         {
             serverPort = port;
 

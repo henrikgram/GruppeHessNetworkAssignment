@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace GruppeHessNetworkAssignment.Network
 {
-    public class Server
+    public class UdpServerManager
     {
         private static int port = 11000;
 
@@ -26,7 +26,7 @@ namespace GruppeHessNetworkAssignment.Network
         //private IPAddress tmpIPAdress;
         //private int tmpPort;
 
-        public Server()
+        public UdpServerManager()
         {
             Thread receivingThread = new Thread(Recieve);
             receivingThread.IsBackground = true;

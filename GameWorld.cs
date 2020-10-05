@@ -30,8 +30,8 @@ namespace GruppeHessNetworkAssignment
 
         private int enemyID = 0;
         private int objectID = 0;
-        private Server server;
-        private Client client;
+        private UdpServerManager server;
+        private UdpClientManager client;
         private static GameWorld instance;
         private Highscore highscore;
 
@@ -41,8 +41,8 @@ namespace GruppeHessNetworkAssignment
 
         public Player PlayerServer { get; private set; }
         public Player PlayerClient { get; private set; }
-        public Client ClientInstance { get => client; set => client = value; }
-        public Server ServerInstance { get => server; set => server = value; }
+        public UdpClientManager ClientInstance { get => client; set => client = value; }
+        public UdpServerManager ServerInstance { get => server; set => server = value; }
         public bool Instantiated { get; set; } = false;
         public byte PlayerCount { get; set; } = 0;
         public int ScreenHeight { get; } = 1000;
@@ -108,7 +108,7 @@ namespace GruppeHessNetworkAssignment
                 // Instantiates the server, if the game starts in server mode.
                 if (input == "S")
                 {                 
-                    server = new Server();
+                    server = new UdpServerManager();
                     highscore = new Highscore();
                     isServer = true;
                     startScreen = false;
@@ -118,7 +118,7 @@ namespace GruppeHessNetworkAssignment
                 else if (input == "C")
                 {
                     Console.WriteLine("What port would you like to connect to?");
-                    client = new Client(Int32.Parse(Console.ReadLine()));
+                    client = new UdpClientManager(Int32.Parse(Console.ReadLine()));
 
                     isServer = false;
                     startScreen = false;
