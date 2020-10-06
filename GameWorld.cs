@@ -116,6 +116,8 @@ namespace GruppeHessNetworkAssignment
                     highscore = new Highscore();
                     isServer = true;
                     isStartScreen = false;
+                    Window.Title = "Server";
+                    Console.Title = "Server";
                 }
 
                 // Instantiates a client, if the game starts in player mode.

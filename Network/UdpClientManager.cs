@@ -68,6 +68,8 @@ namespace GruppeHessNetworkAssignment.Network
                     returnData = Encoding.ASCII.GetString(receiveBytes);
 
                     Console.WriteLine($"Client received: {returnData.ToString()}");
+
+                    HandleReturnData();
                 }
                 catch (Exception e)
                 {
