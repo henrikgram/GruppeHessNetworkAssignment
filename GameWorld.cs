@@ -31,21 +31,21 @@ namespace GruppeHessNetworkAssignment
 
         private int enemyID = 0;
         private int objectID = 0;
-        private UdpServerManager server;
-        private UdpClientManager client;
+        private UdpServerManager udpServer;
+        private UdpClientManager udpClient;
         private static GameWorld instance;
         private Highscore highscore;
 
-        private bool startScreen = true;
+        private bool isStartScreen = true;
         private bool isServer = false;
-        private bool gameIsStarted = false;
+        //private bool gameIsStarted = false;
 
         private byte maxPlayers = 1;
 
         public Player PlayerServer { get; private set; }
         public Player PlayerClient { get; private set; }
-        public UdpClientManager ClientInstance { get => client; set => client = value; }
-        public UdpServerManager ServerInstance { get => server; set => server = value; }
+        public UdpClientManager ClientInstance { get => udpClient; set => udpClient = value; }
+        public UdpServerManager ServerInstance { get => udpServer; set => udpServer = value; }
         public bool Instantiated { get; set; } = false;
         public byte PlayerCount { get; set; } = 0;
         public int ScreenHeight { get; } = 1000;
@@ -112,17 +112,17 @@ namespace GruppeHessNetworkAssignment
                 if (input == "S")
                 {
                     new TcpServerManager();
-                    //server = new UdpServerManager();
+                    //udpServer = new UdpServerManager();
                     highscore = new Highscore();
                     isServer = true;
-                    startScreen = false;
+                    isStartScreen = false;
                 }
 
                 // Instantiates a client, if the game starts in player mode.
                 else if (input == "C")
                 {
                     //Console.WriteLine("What port would you like to connect to?");
-                    //client = new UdpClientManager(Int32.Parse(Console.ReadLine()));
+                    //udpClient = new UdpClientManager();
 
                     //Instantiates a client, if the game starts in client/player mode.
 
@@ -140,7 +140,7 @@ namespace GruppeHessNetworkAssignment
                     new TcpClientManager("192.168.87.159", /*11000,*/ "12345678");
 
                     isServer = false;
-                    startScreen = false;
+                    isStartScreen = false;
                 }
 
                 else
@@ -153,13 +153,13 @@ namespace GruppeHessNetworkAssignment
             if (isServer)
             {
                 udpServer = new UdpServerManager();
-                gameIsStarted = true;
+                //gameIsStarted = true;
             }
 
             else if (!isServer)
             {
                 udpClient = new UdpClientManager();
-                gameIsStarted = true;
+                //gameIsStarted = true;
             }
         }
 
@@ -171,16 +171,16 @@ namespace GruppeHessNetworkAssignment
         {
             // TODO: use this.Content to load your game content here
 
-            if (gameIsStarted)
-            {
+            //if (gameIsStarted)
+            //{
                 // Create a new SpriteBatch, which can be used to draw textures.
-                //spriteBatch = new SpriteBatch(GraphicsDevice);
+                spriteBatch = new SpriteBatch(GraphicsDevice);
 
                 Asset.LoadContent(Content);
 
                 //gameObjects.Add(player = new Player(new Vector2(ScreenSize.X / 2, ScreenSize.Y - Asset.playerSprite.Height)));
                 //gameObjects.Add(new Enemy(new Vector2(300, 300)));
-            }
+            //}
         }
 
         /// <summary>
@@ -201,7 +201,7 @@ namespace GruppeHessNetworkAssignment
         {
             // Makes sure the PlayerCount goes up everytime a new player joins the game.
             // In the Client constructor, the message P is send everytime a new client is added.
-            if (IsServer && ServerInstance.ReturnData == "P")
+            if (isServer && ServerInstance.ReturnData == "P")
             {
                 PlayerCount++;
                 // Resets ReturnData, so this message doesn't have to be in Player as an empty "else if" sentence.
@@ -209,7 +209,7 @@ namespace GruppeHessNetworkAssignment
             }
 
             // Once the max amount of players has joined, the game can start.
-            if (PlayerCount == maxPlayers && gameIsStarted)
+            if (PlayerCount == maxPlayers/* && gameIsStarted*/)
             {
                 // Only draws the player once all players has joined the game.
                 // For server below.
@@ -233,8 +233,6 @@ namespace GruppeHessNetworkAssignment
                 //For two player, so the server can send a pos back to the client.
                 if (isServer)
                 {
-                    //server.Send(PlayerServer.Position.X.ToString());
-                    //server.Send(player.Position.X.ToString());
                     AddNewEnemyShipsServer();
                     SendEnemyShipInfoToClient();
 
@@ -243,9 +241,7 @@ namespace GruppeHessNetworkAssignment
                         timeTillNewInvasionForce -= gameTime.ElapsedGameTime;
                     }
 
-                    server.Send("Update|Player|" + PlayerServer.Position.X + "|" + PlayerServer.Position.Y);
-
-                    //SendEnemyShipInfoToClient();
+                    udpServer.Send("Update|Player|" + PlayerServer.Position.X + "|" + PlayerServer.Position.Y);
                 }
 
                 // Makes sure the client sends the player's updated position to the server.
@@ -253,7 +249,7 @@ namespace GruppeHessNetworkAssignment
                 {
                     //client.Send(PlayerClient.Position.X.ToString());
 
-                    client.Send("Update|Player|" + PlayerClient.Position.X + "|" + PlayerClient.Position.Y);
+                    udpClient.Send("Update|Player|" + PlayerClient.Position.X + "|" + PlayerClient.Position.Y);
 
                     //try
                     //{
@@ -312,6 +308,8 @@ namespace GruppeHessNetworkAssignment
         {
             GraphicsDevice.Clear(Color.Black);
 
+            // TODO: Add your drawing code here
+
             spriteBatch.Begin();
 
             if (Instantiated)
@@ -320,21 +318,13 @@ namespace GruppeHessNetworkAssignment
                 spriteBatch.DrawString(Asset.scoreFont, $"Health: {PlayerServer.PlayerHealth}", new Vector2(0, 0), Color.DarkBlue, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
             }
 
-            // TODO: Add your drawing code here
-
-            if (gameIsStarted)
+            foreach (GameObject gameObject in gameObjects)
             {
+                gameObject.Draw(spriteBatch);
+                DrawCollisionBox(gameObject);
+            }            
 
-                spriteBatch.Begin();
-
-                foreach (GameObject gameObject in gameObjects)
-                {
-                    gameObject.Draw(spriteBatch);
-                    DrawCollisionBox(gameObject);
-                }
-
-                spriteBatch.End();
-            }
+            spriteBatch.End();
 
             base.Draw(gameTime);
         }
@@ -374,7 +364,7 @@ namespace GruppeHessNetworkAssignment
                     Enemy tmpEnemy = new Enemy(new Vector2(rnd.Next(0, (int)ScreenSize.X - Asset.enemySprite.Width), 0 - Asset.enemySprite.Height)/*, enemyID*/);
                     NewGameObjects.Add(tmpEnemy);
 
-                    server.Send("New|Enemy|" + tmpEnemy.ID + "|" + tmpEnemy.Position.X + "|" + tmpEnemy.Position.Y);
+                    udpServer.Send("New|Enemy|" + tmpEnemy.ID + "|" + tmpEnemy.Position.X + "|" + tmpEnemy.Position.Y);
                     //enemyID++;
                 }
                 timeTillNewInvasionForce = new TimeSpan(0, 0, 5);
@@ -390,7 +380,7 @@ namespace GruppeHessNetworkAssignment
             for (int i = 0; i < enemies.Count; i++)
             {
                 Enemy currentEnemy = (Enemy)enemies[i];
-                server.Send("Update|Enemy|" + currentEnemy.ID + "|" + currentEnemy.Position.X + "|" + currentEnemy.Position.Y);
+                udpServer.Send("Update|Enemy|" + currentEnemy.ID + "|" + currentEnemy.Position.X + "|" + currentEnemy.Position.Y);
             }
         }
     }

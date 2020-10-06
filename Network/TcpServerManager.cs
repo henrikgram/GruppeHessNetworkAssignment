@@ -13,6 +13,8 @@ namespace GruppeHessNetworkAssignment.Network
 
         private static string password;
 
+        private static Thread clientThread;
+
         /// <summary>
         /// Constructs a TCPServerManager.
         /// </summary>
@@ -60,7 +62,8 @@ namespace GruppeHessNetworkAssignment.Network
             Console.WriteLine("New Tcp client!");
 
             //Each client is running on a thread.
-            Thread clientThread = new Thread(new ParameterizedThreadStart(HandleTcpClient));
+            clientThread = new Thread(new ParameterizedThreadStart(HandleTcpClient));
+            clientThread.IsBackground = true;
             clientThread.Start(newTcpClient);
         }
 
@@ -103,21 +106,21 @@ namespace GruppeHessNetworkAssignment.Network
                     streamData = streamReader.ReadLine();
 
                     //Compare the two encoded passwords.
-                    if (streamData != string.Empty && streamData != tmpPassword)
-                    {
-                        Console.WriteLine($"Recieved from Tcp client: {streamData}");
-
-                        //What to send to the client.
-                        streamData = "Incorrect password.";
-                        streamWriter.WriteLine(streamData);
-                    }
-
-                    else if (streamData != string.Empty && streamData == tmpPassword)
+                    if (streamData != string.Empty && streamData == tmpPassword)
                     {
                         Console.WriteLine($"Recieved from Tcp client: {streamData}");
 
                         streamData = "Correct password.";
 
+                        streamWriter.WriteLine(streamData);
+                    }
+
+                    else if (streamData != string.Empty && streamData != tmpPassword)
+                    {
+                        Console.WriteLine($"Recieved from Tcp client: {streamData}");
+
+                        //What to send to the client.
+                        streamData = "Incorrect password.";
                         streamWriter.WriteLine(streamData);
                     }
                 }
@@ -143,12 +146,17 @@ namespace GruppeHessNetworkAssignment.Network
                     Thread.CurrentThread.Abort();
                 }
 
-                Thread.CurrentThread.Abort();
-                tcpServer.Stop();
+                tcpClient.Close();
+
+                break;
             }
 
             if (!tcpClient.Connected)
             {
+                tcpServer.Stop();
+
+                clientThread.Abort();
+
                 Console.WriteLine("Connection closed.");
             }
         }

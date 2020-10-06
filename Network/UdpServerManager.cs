@@ -10,14 +10,14 @@ using System.Threading;
 
 namespace GruppeHessNetworkAssignment.Network
 {
-    class UdpServerManager : Server
+    public class UdpServerManager : Server
     {
         private UdpClient receivingUdpClient = new UdpClient(serverPort);
         private UdpClient udpClient = new UdpClient();
 
         private string returnData;
 
-        public int Port { get => port; }
+        //public int Port { get => port; }
         public string ReturnData { get => returnData; set => returnData = value; }
 
         private IPEndPoint remoteIpEndPoint;

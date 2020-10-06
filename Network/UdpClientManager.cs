@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Xna.Framework;
+using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -11,7 +12,7 @@ namespace GruppeHessNetworkAssignment.Network
         private UdpClient recievingUdpClient = new UdpClient(clientPort);
         private UdpClient udpClient = new UdpClient();
 
-        //IPEndPoint remoteIpEndPoint;
+        IPEndPoint remoteIpEndPoint;
 
         private string returnData;
 
@@ -24,12 +25,15 @@ namespace GruppeHessNetworkAssignment.Network
 
         public UdpClientManager()
         {
-            //remoteIpEndPoint = new IPEndPoint(IPAddress.Any, 0);
+            remoteIpEndPoint = new IPEndPoint(IPAddress.Any, 0);
 
             Thread receivingThread = new Thread(Receive);
             receivingThread.IsBackground = true;
             receivingThread.Name = "Receive Thread Client";
             receivingThread.Start();
+
+            Send("P");
+            GameWorld.Instance.PlayerCount++;
         }
 
 

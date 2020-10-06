@@ -60,7 +60,7 @@ namespace GruppeHessNetworkAssignment.Network
             streamWriter.WriteLine(streamData);
 
 
-            while (tcpClient.Connected)
+            if (tcpClient.Connected)
             {
                 try
                 {
