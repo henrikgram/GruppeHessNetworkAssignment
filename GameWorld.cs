@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Linq;
 using System.Net.Sockets;
 using System.Threading;
+using System.Data.SQLite;
 
 namespace GruppeHessNetworkAssignment
 {
@@ -36,12 +37,16 @@ namespace GruppeHessNetworkAssignment
         private static GameWorld instance;
         private Highscore highscore;
 
+        private int tmpScore = 5;
+        private string tmpName = "Nej";
+
         private bool isStartScreen = true;
         private bool isServer = false;
         //private bool gameIsStarted = false;
 
         private byte maxPlayers = 1;
 
+        public DBHandler DbHandler { get; private set; }
         public Player PlayerServer { get; private set; }
         public Player PlayerClient { get; private set; }
         public UdpClientManager ClientInstance { get => udpClient; set => udpClient = value; }
@@ -86,6 +91,12 @@ namespace GruppeHessNetworkAssignment
         /// </summary>
         protected override void Initialize()
         {
+            DbHandler = new DBHandler();
+
+            DbHandler.BuildDatabase();
+            DbHandler.InsertIntoTable("NameTable", $"NULL, '{tmpName}'", new SQLiteConnection(DbHandler.LoadSQLiteConnectionString()));
+            DbHandler.InsertIntoTable("ScoreTable", $"NULL, 2, 500", new SQLiteConnection(DbHandler.LoadSQLiteConnectionString()));
+
             ServerClientSetup();
 
             // CHANGES THE SCREEN SIZE.
