@@ -137,7 +137,7 @@ namespace GruppeHessNetworkAssignment
 
                     //new TcpClientManager(ip, int.Parse(port), password);
 
-                    new TcpClientManager("192.168.87.159", /*11000,*/ "12345678");
+                    new TcpClientManager("192.168.0.102", /*11000,*/ "12345678");
 
                     isServer = false;
                     isStartScreen = false;
@@ -207,9 +207,9 @@ namespace GruppeHessNetworkAssignment
                 // Resets ReturnData, so this message doesn't have to be in Player as an empty "else if" sentence.
                 ServerInstance.ReturnData = null;
             }
-
+            Console.WriteLine("PlayerCount : " + PlayerCount);
             // Once the max amount of players has joined, the game can start.
-            if (PlayerCount == maxPlayers/* && gameIsStarted*/)
+            //if (PlayerCount == maxPlayers/* && gameIsStarted*/)
             {
                 // Only draws the player once all players has joined the game.
                 // For server below.
