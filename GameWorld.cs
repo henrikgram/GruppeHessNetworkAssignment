@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Dynamic;
 using System.Reflection;
 using System.Linq;
+using System.Net.Sockets;
 using System.Threading;
 
 namespace GruppeHessNetworkAssignment
@@ -37,6 +38,8 @@ namespace GruppeHessNetworkAssignment
 
         private bool startScreen = true;
         private bool isServer = false;
+        private bool gameIsStarted = false;
+
         private byte maxPlayers = 1;
 
         public Player PlayerServer { get; private set; }
@@ -100,15 +103,16 @@ namespace GruppeHessNetworkAssignment
         /// </summary>
         private void ServerClientSetup()
         {
-            while (startScreen == true)
+            while (isStartScreen == true)
             {
                 Console.WriteLine("Server (S) or Client (C)?");
                 string input = Console.ReadLine().ToUpper();
 
                 // Instantiates the server, if the game starts in server mode.
                 if (input == "S")
-                {                 
-                    server = new UdpServerManager();
+                {
+                    new TcpServerManager();
+                    //server = new UdpServerManager();
                     highscore = new Highscore();
                     isServer = true;
                     startScreen = false;
@@ -117,8 +121,23 @@ namespace GruppeHessNetworkAssignment
                 // Instantiates a client, if the game starts in player mode.
                 else if (input == "C")
                 {
-                    Console.WriteLine("What port would you like to connect to?");
-                    client = new UdpClientManager(Int32.Parse(Console.ReadLine()));
+                    //Console.WriteLine("What port would you like to connect to?");
+                    //client = new UdpClientManager(Int32.Parse(Console.ReadLine()));
+
+                    //Instantiates a client, if the game starts in client/player mode.
+
+                    //Console.WriteLine("What IP would you like to connect to?");
+                    //string ip = Console.ReadLine();
+
+                    //Console.WriteLine("What port would you like to connect to?");
+                    //string port = Console.ReadLine();
+
+                    //Console.WriteLine("Write the server password: ");
+                    //string password = Console.ReadLine();
+
+                    //new TcpClientManager(ip, int.Parse(port), password);
+
+                    new TcpClientManager("192.168.87.159", /*11000,*/ "12345678");
 
                     isServer = false;
                     startScreen = false;
@@ -127,8 +146,20 @@ namespace GruppeHessNetworkAssignment
                 else
                 {
                     Console.WriteLine("Invalid input.");
-                    startScreen = true;
+                    isStartScreen = true;
                 }
+            }
+
+            if (isServer)
+            {
+                udpServer = new UdpServerManager();
+                gameIsStarted = true;
+            }
+
+            else if (!isServer)
+            {
+                udpClient = new UdpClientManager();
+                gameIsStarted = true;
             }
         }
 
@@ -138,13 +169,18 @@ namespace GruppeHessNetworkAssignment
         /// </summary>
         protected override void LoadContent()
         {
-            // Create a new SpriteBatch, which can be used to draw textures.
-            spriteBatch = new SpriteBatch(GraphicsDevice);
-
-            // Loads all the assets(sprites) in the game.
-            Asset.LoadContent(Content);
-
             // TODO: use this.Content to load your game content here
+
+            if (gameIsStarted)
+            {
+                // Create a new SpriteBatch, which can be used to draw textures.
+                //spriteBatch = new SpriteBatch(GraphicsDevice);
+
+                Asset.LoadContent(Content);
+
+                //gameObjects.Add(player = new Player(new Vector2(ScreenSize.X / 2, ScreenSize.Y - Asset.playerSprite.Height)));
+                //gameObjects.Add(new Enemy(new Vector2(300, 300)));
+            }
         }
 
         /// <summary>
@@ -173,7 +209,7 @@ namespace GruppeHessNetworkAssignment
             }
 
             // Once the max amount of players has joined, the game can start.
-            if (PlayerCount == maxPlayers)
+            if (PlayerCount == maxPlayers && gameIsStarted)
             {
                 // Only draws the player once all players has joined the game.
                 // For server below.
@@ -285,13 +321,20 @@ namespace GruppeHessNetworkAssignment
             }
 
             // TODO: Add your drawing code here
-            foreach (GameObject gameObject in gameObjects)
-            {
-                gameObject.Draw(spriteBatch);
-                DrawCollisionBox(gameObject);
-            }
 
-            spriteBatch.End();
+            if (gameIsStarted)
+            {
+
+                spriteBatch.Begin();
+
+                foreach (GameObject gameObject in gameObjects)
+                {
+                    gameObject.Draw(spriteBatch);
+                    DrawCollisionBox(gameObject);
+                }
+
+                spriteBatch.End();
+            }
 
             base.Draw(gameTime);
         }

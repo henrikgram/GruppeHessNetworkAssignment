@@ -1,23 +1,18 @@
-﻿using Microsoft.Xna.Framework;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace GruppeHessNetworkAssignment.Network
 {
-    public class UdpClientManager
+    public class UdpClientManager : Client
     {
-        private static int port = 13000;
-        private int serverPort;
+        private UdpClient recievingUdpClient = new UdpClient(clientPort);
+        private UdpClient udpClient = new UdpClient();
 
-        private UdpClient recievingUdpClient = new UdpClient(port);
-        private UdpClient udpClient = new UdpClient(/*port*/);
+        //IPEndPoint remoteIpEndPoint;
+
         private string returnData;
 
         public string ReturnData
@@ -26,64 +21,49 @@ namespace GruppeHessNetworkAssignment.Network
             set { returnData = value; }
         }
 
-        public UdpClientManager(int port)
+
+        public UdpClientManager()
         {
-            serverPort = port;
+            //remoteIpEndPoint = new IPEndPoint(IPAddress.Any, 0);
 
             Thread receivingThread = new Thread(Receive);
             receivingThread.IsBackground = true;
             receivingThread.Name = "Receive Thread Client";
             receivingThread.Start();
-
-            Send("P");
-            GameWorld.Instance.PlayerCount++;
         }
+
 
         public void Send(string message)
         {
-            //while (true)
+            try
             {
+                udpClient.Connect(inhRemoteIPEndPoint.Address, remotePort);
 
-                try
-                {
-                    udpClient.Connect("127.0.0.1", serverPort);
+                // Sends a message to the host to which you have connected.
+                Byte[] sendBytes = Encoding.ASCII.GetBytes(message);
 
-                    // Sends a message to the host to which you have connected.
-                    Byte[] sendBytes = Encoding.ASCII.GetBytes(message);
-
-                    udpClient.Send(sendBytes, sendBytes.Length);
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e.ToString());
-                }
+                udpClient.Send(sendBytes, sendBytes.Length);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.ToString());
             }
         }
 
-        public void Receive()
+        private void Receive()
         {
-            // This bool becomes false when the player exits the game.
-            // Makes sure the thread dies so the game can shut down properly.
             while (GameWorld.Instance.ProgramRunning)
             {
-                IPEndPoint RemoteIpEndPoint = new IPEndPoint(IPAddress.Any, 0);
+              IPEndPoint RemoteIpEndPoint = new IPEndPoint(IPAddress.Any, 0);
 
                 try
                 {
-                    // Blocks until a message returns on this socket from a remote host.
-                    Byte[] receiveBytes = recievingUdpClient.Receive(ref RemoteIpEndPoint);
+                    //Blocks until a message returns on this socket from a remote host.
+                    Byte[] receiveBytes = recievingUdpClient.Receive(ref remoteIpEndPoint);
 
                     returnData = Encoding.ASCII.GetString(receiveBytes);
 
-                    Console.WriteLine("Client received: " +
-                                              returnData.ToString());
-
-                    HandleReturnData();
-                    //Console.WriteLine("This message was sent from " +
-                    //                            RemoteIpEndPoint.Address.ToString() +
-                    //                            " on their port number " +
-                    //                            RemoteIpEndPoint.Port.ToString());
-
+                    Console.WriteLine($"Client received: {returnData.ToString()}");
                 }
                 catch (Exception e)
                 {

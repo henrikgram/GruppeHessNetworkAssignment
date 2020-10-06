@@ -7,27 +7,26 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace GruppeHessNetworkAssignment.Network
 {
-    public class UdpServerManager
+    class UdpServerManager : Server
     {
-        private static int port = 11000;
-
-        private UdpClient receivingUdpClient = new UdpClient(port);
+        private UdpClient receivingUdpClient = new UdpClient(serverPort);
         private UdpClient udpClient = new UdpClient();
+
         private string returnData;
 
         public int Port { get => port; }
         public string ReturnData { get => returnData; set => returnData = value; }
 
-        private IPEndPoint remoteIpEndPoint; /*= new IPEndPoint(IPAddress.Any, 0);*/
-        //private IPAddress tmpIPAdress;
-        //private int tmpPort;
+        private IPEndPoint remoteIpEndPoint;
+
 
         public UdpServerManager()
         {
+            //remoteIpEndPoint = new IPEndPoint(IPAddress.Any, 0);
+
             Thread receivingThread = new Thread(Recieve);
             receivingThread.IsBackground = true;
             receivingThread.Name = "Receive Thread Server";
@@ -39,22 +38,17 @@ namespace GruppeHessNetworkAssignment.Network
         /// </summary>
         public void Send(string message)
         {
-            //if (tmpIPAdress.ToString() != "0.0.0.0")
+            try
             {
-                try
-                {
-                    //udpClient.Connect(RemoteIpEndPoint.Address, RemoteIpEndPoint.Port);
-                    //udpClient.Connect(tmpIPAdress, tmpPort);
-                    udpClient.Connect("127.0.0.1", 13000);
+                udpClient.Connect(inhRemoteIPEndPoint.Address, remotePort);
 
-                    Byte[] sendBytes = Encoding.ASCII.GetBytes(message);
-                    udpClient.Send(sendBytes, sendBytes.Length);
-                }
-                catch (Exception e)
-                {
-                    // Writes out the exception if any errors occur.
-                    Console.WriteLine(e.ToString());
-                }
+                Byte[] sendBytes = Encoding.ASCII.GetBytes(message);
+                udpClient.Send(sendBytes, sendBytes.Length);
+            }
+            catch (Exception e)
+            {
+                // Writes out the exception if any errors occur.
+                Console.WriteLine(e.ToString());
             }
         }
 
@@ -63,26 +57,21 @@ namespace GruppeHessNetworkAssignment.Network
         /// </summary>
         private void Recieve()
         {
+
             Console.WriteLine("Waiting for a connection...");
 
-            // This bool becomes false when the player exits the game.
-            // Makes sure the thread dies so the game can shut down properly.
             while (GameWorld.Instance.ProgramRunning)
             {
-                remoteIpEndPoint = new IPEndPoint(IPAddress.Any, 0);
-                //tmpIPAdress = remoteIpEndPoint.Address;
-                //tmpPort = remoteIpEndPoint.Port;
+              remoteIpEndPoint = new IPEndPoint(IPAddress.Any, 0);
 
                 try
                 {
-                    //// Blocks until a message returns on this socket from a remote host.
+                    //Blocks until a message returns on this socket from a remote host.
                     Byte[] receiveBytes = receivingUdpClient.Receive(ref remoteIpEndPoint);
 
-                    returnData = Encoding.ASCII.GetString(receiveBytes);
+                    string returnData = Encoding.ASCII.GetString(receiveBytes);
 
                     Console.WriteLine($"Server received: {returnData}");
-                    //Console.WriteLine($"Message was sent from: {RemoteIpEndPoint.Address.ToString()} \nOn port number: {RemoteIpEndPoint.Port.ToString()}");
-                    //Console.WriteLine();
 
                     HandleOtherPlayer();
                 }
