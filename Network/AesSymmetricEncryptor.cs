@@ -8,46 +8,43 @@ using System.Threading.Tasks;
 
 namespace GruppeHessNetworkAssignment.Network
 {
-    public class AesEncryptor
+    public class AesSymmetricEncryptor
     {
-        private static AesEncryptor instance;
-        public byte[] Key { get; private set; }
+        private static AesSymmetricEncryptor instance;
 
-        public static AesEncryptor Instance
+        public byte[] key = { 207,251,215,218,58,91,196,42,174,212,191,30,155,179,227,104};
+     
+        public static AesSymmetricEncryptor Instance
         {
 
             get
             {
                 if (instance == null)
                 {
-                    instance = new AesEncryptor();
+                    instance = new AesSymmetricEncryptor();
                 }
                 return instance;
             }
         }
 
-        public AesEncryptor()
-        {
-            //used to generate a new key for symmetric encryption
-            using (Aes aesGenerator = Aes.Create())
-            {
-                aesGenerator.GenerateKey();
 
-                Key = aesGenerator.Key;
-            }
-        }
-
-        public byte[] EncryptString(string plainText, byte[] Key)
+        /// <summary>
+        /// Returns a byte array with the enrypted input
+        /// </summary>
+        /// <param name="input">message to be encrypted</param>
+        /// <param name="Key">Key for encrypting message</param>
+        /// <returns></returns>
+        public byte[] EncryptString(string input, byte[] Key)
         {
 
             byte[] encrypted;
             byte[] iv;
 
-
             // Create an Aes object
             using (Aes aesEncrypt = Aes.Create())
             {
-
+                //aesEncrypt.Key = Key;
+                //aesEncrypt.IV = IV;
 
                 //generates a new specific IV for this message
                 aesEncrypt.GenerateIV();
@@ -65,11 +62,11 @@ namespace GruppeHessNetworkAssignment.Network
                     using (CryptoStream csEncrypt = new CryptoStream(msEncrypt, encryptor, CryptoStreamMode.Write))
                     {
 
-
+                        //stream writer for writing the encryption to a string
                         using (StreamWriter swEncrypt = new StreamWriter(csEncrypt))
                         {
                             //Write all data to the stream.
-                            swEncrypt.Write(plainText);
+                            swEncrypt.Write(input);
                         }
 
                         //make a new empty array with the size of the encrypted message + the length of the IV
@@ -81,39 +78,37 @@ namespace GruppeHessNetworkAssignment.Network
                         //Combines the two arrays into one
                         Array.Copy(iv, encrypted, iv.Length);
                         Array.Copy(tmpMsEncrypt, 0, encrypted, iv.Length, tmpMsEncrypt.Length);
-
+                     
                     }
-
                 }
-
             }
 
             // Return the encrypted bytes from the memory stream.
             return encrypted;
         }
 
-        public string DecryptStringFromBytes(byte[] cipherText, byte[] Key/*, byte[] IV*/)
+
+        /// <summary>
+        /// Returns a decrypted string from an encrypted byte array
+        /// </summary>
+        /// <param name="input">Encrypted message</param>
+        /// <param name="Key">Key for decrypting</param>
+        /// <returns></returns>
+        public string DecryptStringFromBytes(byte[] input, byte[] Key)
         {
 
-            // Declare the string used to hold
-            // the decrypted text.
-            string plaintext = null;
+            string decryptedMessage = null;
+            byte[] encryptedMessage; 
 
-            byte[] encryptedMessage; //= new byte[cipherText.Length-16];
-
-            byte[] iv;// = new byte[16];
+            byte[] iv;
 
             //splits the byte array into the IV and encrypted message
-            iv = cipherText.Take(16).ToArray();
-            encryptedMessage = cipherText.Skip(16).ToArray();
-
+            iv = input.Take(16).ToArray();
+            encryptedMessage = input.Skip(16).ToArray();
 
             // Create an Aes object
             using (Aes aesDecrypt = Aes.Create())
             {
-                //aesDecrypt.Key = Key;
-                //aesDecrypt.IV = IV;
-
                 // Create a decryptor to perform the stream transform.
                 ICryptoTransform decryptor = aesDecrypt.CreateDecryptor(Key, iv);
 
@@ -127,17 +122,14 @@ namespace GruppeHessNetworkAssignment.Network
 
                             // Read the decrypted bytes from the decrypting stream
                             // and place them in a string.
-                            plaintext = srDecrypt.ReadToEnd();
+                            decryptedMessage = srDecrypt.ReadToEnd();
                         }
                     }
                 }
             }
 
-            return plaintext;
+            return decryptedMessage;
         }
-
-
-
     }
 
 }

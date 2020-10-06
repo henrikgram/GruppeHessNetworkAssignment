@@ -20,8 +20,7 @@ namespace GruppeHessNetworkAssignment.Network
         private UdpClient udpClient = new UdpClient(/*port*/);
         private string returnData;
 
-        //TODO receive this from the server, when connecting with TCP
-        private static byte[] key = AesEncryptor.Instance.Key;
+      
 
         public string ReturnData
         {
@@ -52,11 +51,12 @@ namespace GruppeHessNetworkAssignment.Network
                     udpClient.Connect("127.0.0.1", serverPort);
 
                     // Sends a message to the host to which you have connected.
-                    Byte[] sendBytes;// = Encoding.ASCII.GetBytes(message);
+                    //Byte[] sendBytes = Encoding.ASCII.GetBytes(message);
 
-                    sendBytes = AesEncryptor.Instance.EncryptString(message, key);
+                    byte[] sendBytes = AesSymmetricEncryptor.Instance.EncryptString(message, AesSymmetricEncryptor.Instance.key);
 
                     udpClient.Send(sendBytes, sendBytes.Length);
+
                 }
                 catch (Exception e)
                 {
@@ -76,14 +76,15 @@ namespace GruppeHessNetworkAssignment.Network
                 try
                 {
 
-
-
                     // Blocks until a message returns on this socket from a remote host.
                     Byte[] receiveBytes = recievingUdpClient.Receive(ref RemoteIpEndPoint);
 
-                    returnData = AesEncryptor.Instance.DecryptStringFromBytes(receiveBytes, key);
+                    //returnData = AesEncryptor.Instance.DecryptStringFromBytes(receiveBytes, key);
 
                     //returnData = Encoding.ASCII.GetString(receiveBytes);
+                    returnData = AesSymmetricEncryptor.Instance.DecryptStringFromBytes(receiveBytes, AesSymmetricEncryptor.Instance.key);
+
+
 
                     Console.WriteLine("Client received: " +
                                               returnData.ToString());

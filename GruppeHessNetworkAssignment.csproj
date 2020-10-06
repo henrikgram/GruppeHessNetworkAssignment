@@ -51,7 +51,7 @@
     <Compile Include="Highscore.cs" />
     <Compile Include="Laser.cs" />
     <Compile Include="Network\Client.cs" />
-    <Compile Include="Network\AesEncryptor.cs" />
+    <Compile Include="Network\AesSymmetricEncryptor.cs" />
     <Compile Include="Network\Server.cs" />
     <Compile Include="Player.cs" />
     <Compile Include="Program.cs" />
