@@ -187,7 +187,7 @@ namespace GruppeHessNetworkAssignment.Network
 
             int tmpID = Int32.Parse(inputParameters[1]);
 
-            GameObject destroyedObject = (Enemy)GameWorld.Instance.GameObjects.Find(o => o.ID == tmpID);
+            GameObject destroyedObject = GameWorld.Instance.GameObjects.Find(o => o.ID == tmpID);
             if (destroyedObject != null)
             {
                 GameWorld.Instance.Destroy(destroyedObject);
