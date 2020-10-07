@@ -31,9 +31,6 @@ namespace GruppeHessNetworkAssignment.Network
             receivingThread.IsBackground = true;
             receivingThread.Name = "Receive Thread Client";
             receivingThread.Start();
-
-            Send("P");
-            GameWorld.Instance.PlayerCount++;
         }
 
 
