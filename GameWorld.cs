@@ -10,6 +10,7 @@ using System.Linq;
 using System.Net.Sockets;
 using System.Threading;
 using System.Data.SQLite;
+using System.Reflection.Emit;
 
 namespace GruppeHessNetworkAssignment
 {
@@ -94,10 +95,20 @@ namespace GruppeHessNetworkAssignment
             DbHandler = new DBHandler();
 
             DbHandler.BuildDatabase();
-            DbHandler.InsertIntoTable("NameTable", $"NULL, '{tmpName}'", new SQLiteConnection(DbHandler.LoadSQLiteConnectionString()));
-            DbHandler.InsertIntoTable("ScoreTable", $"NULL, 2, 500", new SQLiteConnection(DbHandler.LoadSQLiteConnectionString()));
+            //DbHandler.InsertIntoTable("NameTable", $"NULL, '{tmpName}'", new SQLiteConnection(DbHandler.LoadSQLiteConnectionString()));
+            //DbHandler.InsertIntoTable("ScoreTable", $"NULL, 2, 500", new SQLiteConnection(DbHandler.LoadSQLiteConnectionString()));
+            DbHandler.InsertIntoTable("Highscore", "NULL, 'Stinna', 500", new SQLiteConnection(DbHandler.LoadSQLiteConnectionString()));
+            DbHandler.InsertIntoTable("Highscore", "NULL, 'Henrik', 1000", new SQLiteConnection(DbHandler.LoadSQLiteConnectionString()));
+            DbHandler.InsertIntoTable("Highscore", "NULL, 'Signe', 800", new SQLiteConnection(DbHandler.LoadSQLiteConnectionString()));
+            DbHandler.InsertIntoTable("Highscore", "NULL, 'Emma', 1400", new SQLiteConnection(DbHandler.LoadSQLiteConnectionString()));
 
-            ServerClientSetup();
+            List<string> highscores = new List<string>();
+            highscores = DbHandler.CreateHighscoreList();
+
+            foreach (string value in highscores)
+            {
+                Console.WriteLine(value);
+            }
 
             // CHANGES THE SCREEN SIZE.
             graphics.PreferredBackBufferHeight = ScreenHeight;
@@ -184,13 +195,13 @@ namespace GruppeHessNetworkAssignment
 
             //if (gameIsStarted)
             //{
-                // Create a new SpriteBatch, which can be used to draw textures.
-                spriteBatch = new SpriteBatch(GraphicsDevice);
+            // Create a new SpriteBatch, which can be used to draw textures.
+            spriteBatch = new SpriteBatch(GraphicsDevice);
 
-                Asset.LoadContent(Content);
+            Asset.LoadContent(Content);
 
-                //gameObjects.Add(player = new Player(new Vector2(ScreenSize.X / 2, ScreenSize.Y - Asset.playerSprite.Height)));
-                //gameObjects.Add(new Enemy(new Vector2(300, 300)));
+            //gameObjects.Add(player = new Player(new Vector2(ScreenSize.X / 2, ScreenSize.Y - Asset.playerSprite.Height)));
+            //gameObjects.Add(new Enemy(new Vector2(300, 300)));
             //}
         }
 
@@ -333,7 +344,7 @@ namespace GruppeHessNetworkAssignment
             {
                 gameObject.Draw(spriteBatch);
                 DrawCollisionBox(gameObject);
-            }            
+            }
 
             spriteBatch.End();
 

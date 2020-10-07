@@ -28,8 +28,9 @@ namespace GruppeHessNetworkAssignment
         public void BuildDatabase()
         {
             //CreateTable("Highscore", "Name STRING, Score INTEGER", new SQLiteConnection(LoadSQLiteConnectionString()));
-            CreateTable("NameTable", "ID INTEGER PRIMARY KEY, Name STRING, UNIQUE (Name)", new SQLiteConnection(LoadSQLiteConnectionString()));
-            CreateTable("ScoreTable", "ID INTEGER PRIMARY KEY, NameID INTEGER, Score INTEGER, FOREIGN KEY (NameID) REFERENCES NameTable(ID)", new SQLiteConnection(LoadSQLiteConnectionString()));
+            //CreateTable("NameTable", "ID INTEGER PRIMARY KEY, Name STRING, UNIQUE (Name)", new SQLiteConnection(LoadSQLiteConnectionString()));
+            //CreateTable("ScoreTable", "ID INTEGER PRIMARY KEY, NameID INTEGER, Score INTEGER, FOREIGN KEY (NameID) REFERENCES NameTable(ID)", new SQLiteConnection(LoadSQLiteConnectionString()));
+            CreateTable("Highscore", "ID INTEGER PRIMARY KEY, Name STRING, Score INTEGER", new SQLiteConnection(LoadSQLiteConnectionString()));
         }
 
         private void ExecuteNonQuerySQLiteCommand(SQLiteCommand command, SQLiteConnection connection)
@@ -49,9 +50,35 @@ namespace GruppeHessNetworkAssignment
         /// <param name="fromTable">What table you want to select from</param>
         /// <param name="whereDefinition">Where conidition for selection</param>
         /// <returns>Returns a list of integers</returns>
-        public List<int> ExecuteStringReader(string selectedColumn, string fromTable, string whereDefinition)
+        //public List<int> ExecuteStringReader()
+        //{
+        //    List<int> values = new List<int>();
+        //    SQLiteConnection connection = new SQLiteConnection(LoadSQLiteConnectionString());
+        //    SQLiteCommand command;
+
+        //    using (connection)
+        //    {
+        //        connection.Open();
+
+        //        command = new SQLiteCommand($"SELECT {selectedColumn} FROM Highscore WHERE {whereDefinition}",
+        //                  connection);
+
+        //        SQLiteDataReader reader = command.ExecuteReader();
+
+        //        //For every read while reader is reading, convert to int32 and add it to the return list.
+        //        while (reader.Read())
+        //        {
+        //            values.Add(reader.GetInt32(0));
+        //        }
+        //    }
+
+        //    return values;
+        //}
+
+
+        public List<string> CreateHighscoreList()
         {
-            List<int> values = new List<int>();
+            List<string> highscoreList = new List<string>();
             SQLiteConnection connection = new SQLiteConnection(LoadSQLiteConnectionString());
             SQLiteCommand command;
 
@@ -59,20 +86,26 @@ namespace GruppeHessNetworkAssignment
             {
                 connection.Open();
 
-                command = new SQLiteCommand($"SELECT {selectedColumn} FROM Highscore WHERE {whereDefinition}",
-                          connection);
+                command = new SQLiteCommand($"SELECT ID FROM Highscore ORDER BY Score DESC", connection);
 
                 SQLiteDataReader reader = command.ExecuteReader();
 
                 //For every read while reader is reading, convert to int32 and add it to the return list.
                 while (reader.Read())
                 {
-                    values.Add(reader.GetInt32(0));
+                    int tmpID = reader.GetInt32(0);
+
+                    string tmpName = SelectStringValuesWhere("Name", "Highscore", $"ID={tmpID}", new SQLiteConnection(LoadSQLiteConnectionString()));
+
+                    int tmpScore = SelectIntValuesWhere("Score", "Highscore", $"ID={tmpID}", new SQLiteConnection(LoadSQLiteConnectionString()));
+
+                    highscoreList.Add($"{tmpName}: {tmpScore}");
                 }
             }
 
-            return values;
+            return highscoreList;
         }
+
 
         private void CreateTable(string tableName, string columns, SQLiteConnection connection)
         {
@@ -89,5 +122,52 @@ namespace GruppeHessNetworkAssignment
         {
             ExecuteNonQuerySQLiteCommand(new SQLiteCommand($"INSERT INTO {tableName} VALUES ({definedValues});", connection), connection);
         }
+
+
+        #region Methods for getting table values.
+
+        private string SelectStringValuesWhere(string selectDefinition, string tableName, string whereDefinition,
+                                              SQLiteConnection connection)
+        {
+            return ExecuteScalarString(new SQLiteCommand($"SELECT {selectDefinition} FROM {tableName} WHERE " +
+                                                 $"{whereDefinition};", connection), connection);
+        }
+
+        private int SelectIntValuesWhere(string selectDefinition, string tableName, string whereDefinition,
+                                       SQLiteConnection connection)
+        {
+            return ExecuteScalarInt(new SQLiteCommand($"SELECT {selectDefinition} FROM {tableName} WHERE " +
+                                 $"{whereDefinition};", connection), connection);
+        }
+
+
+
+        private string ExecuteScalarString(SQLiteCommand command, SQLiteConnection connection)
+        {
+            string value;
+
+            using (connection)
+            {
+                connection.Open();
+                value = Convert.ToString(command.ExecuteScalar());
+            }
+
+            return value;
+        }
+
+        private int ExecuteScalarInt(SQLiteCommand command, SQLiteConnection connection)
+        {
+            int value;
+
+            using (connection)
+            {
+                connection.Open();
+                value = Convert.ToInt32(command.ExecuteScalar());
+            }
+
+            return value;
+        }
+
+        #endregion
     }
 }
