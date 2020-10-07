@@ -14,46 +14,60 @@ namespace GruppeHessNetworkAssignment
 {
     public class Player : GameObject
     {
+        #region Fields
+
         private bool canShoot = true;
         private bool playerIsSet = false;
         private TimeSpan cooldown;
         private Player player;
 
+        #endregion
+
+
         public int PlayerHealth { get; set; }
         public bool IsDead { get; private set; } = false;
 
+        /// <summary>
+        /// Constructor for player.
+        /// </summary>
+        /// <param name="position"> Gives the player a start position. </param>
         public Player(Vector2 position)
         {
             this.Position = position;
             speed = 800f;
             cooldown = new TimeSpan(0, 0, 0, 0, 0);
 
-            // Sets the correct sprite depending on whether it's a client or the server
-            // making a player character.
+            // Sets the correct sprite depending on whether it's a client or the server making a player character.
             // SetUpServerPlayer becomes true in GameWorld if the game is run in server-mode.
             if (GameWorld.Instance.SetUpServerPlayer)
             {
                 // If server.
                 PlayerHealth = 3;
-                sprite = Asset.playerSprite;
+                sprite = Asset.PlayerSprite;
                 // Sets SetUpServerPlayer to falls to make sure we can continue in our code once the setup is over.
                 GameWorld.Instance.SetUpServerPlayer = false;
             }
             else
             {
                 // If client.
-                sprite = Asset.clientPlayerSprite;
+                sprite = Asset.ClientPlayerSprite;
             }
         }
 
+
+        #region Methods
+
+        /// <summary>
+        /// Handles the player's input.
+        /// </summary>
+        /// <param name="player"></param>
         private void HandleInput(Player player)
         {
-            //Resets velocity
-            //Makes sure that we will stop moving
-            //When no keys are pressed
+            //Resets velocity.
+            //Makes sure that we will stop moving when no keys are pressed.
             velocity = Vector2.Zero;
 
-            //Get the current keyboard state
+            //Get the current keyboard state.
             KeyboardState keyState = Keyboard.GetState();
 
             if (keyState.IsKeyDown(Keys.Left) && GameWorld.Instance.IsServer && GameWorld.Instance.PlayerServer == this ||
@@ -89,7 +103,6 @@ namespace GruppeHessNetworkAssignment
                     GameWorld.Instance.Instantiate(newLaser);
                     // Sends the information to the server.
                     GameWorld.Instance.ClientInstance.Send("New|Laser|" + newLaser.ID + "|" + newLaser.Position.X + "|" + newLaser.Position.Y);
-                    //Console.WriteLine("New Laser : ID : " + newLaser.ID + " Position : " + newLaser.Position.ToString());
                 }
                 // Server shoot.
                 if (GameWorld.Instance.IsServer && GameWorld.Instance.PlayerServer == this)
@@ -101,7 +114,7 @@ namespace GruppeHessNetworkAssignment
                     GameWorld.Instance.ServerInstance.Send("New|Laser|" + newLaser.ID + "|" + newLaser.Position.X + "|" + newLaser.Position.Y);
                 }
 
-                // Two next functions make sure shoot has a cool down.
+                // These two make sure shoot has a cool down.
                 canShoot = false;
                 cooldown = new TimeSpan(0, 0, 0, 0, 100);
             }
@@ -122,6 +135,10 @@ namespace GruppeHessNetworkAssignment
             }
         }
 
+        /// <summary>
+        /// Update method for player.
+        /// </summary>
+        /// <param name="gameTime"></param>
         public override void Update(GameTime gameTime)
         {
             // Sets player to a certain player,
@@ -162,15 +179,22 @@ namespace GruppeHessNetworkAssignment
             }
         }
 
+        /// <summary>
+        /// Collision method for player.
+        /// </summary>
+        /// <param name="other"></param>
         public override void OnCollision(GameObject other)
         {
             // Player doesn't have any collision with anything.
         }
 
+        /// <summary>
+        /// What happens when the player dies. Is only called when the players die.
+        /// </summary>
         public void Death()
         {
             // Insert end game lose shit. Maybe a loser screen (just a sprite font is fine). Hilsen Signe
-            if (GameWorld.Instance.IsServer && !IsDead)
+            if (GameWorld.Instance.IsServer && !IsDead && GameWorld.Instance.PlayerServer == this)
             {
                 GameWorld.Instance.DBHandlerInstance.InsertIntoTable("Highscore", $"NULL, '{GameWorld.Instance.TeamName}', {Highscore.Instance.Points}",
                                                                       new SQLiteConnection(GameWorld.Instance.DBHandlerInstance.LoadSQLiteConnectionString()));
@@ -179,5 +203,6 @@ namespace GruppeHessNetworkAssignment
 
             IsDead = true;
         }
+        #endregion
     }
 }

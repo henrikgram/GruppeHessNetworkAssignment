@@ -7,22 +7,20 @@ using System.Threading;
 
 namespace GruppeHessNetworkAssignment.Network
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class UdpClientManager : Client
     {
         private UdpClient recievingUdpClient = new UdpClient(clientPort);
         private UdpClient udpClient = new UdpClient();
+        private IPEndPoint remoteIpEndPoint;
 
-        IPEndPoint remoteIpEndPoint;
+        public string ReturnData { get; private set; }  
 
-        private string returnData;
-
-        public string ReturnData
-        {
-            get { return returnData; }
-            set { returnData = value; }
-        }
-
-
+        /// <summary>
+        /// Constructor for UdpClientManager
+        /// </summary>
         public UdpClientManager()
         {
             remoteIpEndPoint = new IPEndPoint(IPAddress.Any, 0);
@@ -34,6 +32,12 @@ namespace GruppeHessNetworkAssignment.Network
         }
 
 
+        #region Methods
+
+        /// <summary>
+        /// Allows the client to send messages as bytearrays.
+        /// </summary>
+        /// <param name="message"></param>
         public void Send(string message)
         {
             //if (!GameWorld.Instance.PlayerClient.IsDead)
@@ -43,7 +47,8 @@ namespace GruppeHessNetworkAssignment.Network
                     udpClient.Connect(inhRemoteIPEndPoint.Address, remotePort);
 
                     // Sends a message to the host to which you have connected.
-                    Byte[] sendBytes = Encoding.ASCII.GetBytes(message);
+                    //Byte[] sendBytes = Encoding.ASCII.GetBytes(message);
+                    Byte[] sendBytes = AesSymmetricEncryptor.Instance.EncryptString(message, AesSymmetricEncryptor.Instance.key);
 
                     udpClient.Send(sendBytes, sendBytes.Length);
                 }
@@ -54,6 +59,9 @@ namespace GruppeHessNetworkAssignment.Network
             }
         }
 
+        /// <summary>
+        /// Method for receiving messages as byte arrays, which runs on a seperate thread. 
+        /// </summary>
         private void Receive()
         {
             while (GameWorld.Instance.ProgramRunning)
@@ -65,11 +73,12 @@ namespace GruppeHessNetworkAssignment.Network
                     //Blocks until a message returns on this socket from a remote host.
                     Byte[] receiveBytes = recievingUdpClient.Receive(ref remoteIpEndPoint);
 
-                    returnData = Encoding.ASCII.GetString(receiveBytes);
-
-                    Console.WriteLine($"Client received: {returnData.ToString()}");
+                    //decrypt the message with the key
+                    ReturnData = AesSymmetricEncryptor.Instance.DecryptStringFromBytes(receiveBytes, AesSymmetricEncryptor.Instance.key);
+                    Console.WriteLine($"Client received: {ReturnData.ToString()}");
 
                     HandleReturnData();
+
                 }
                 catch (Exception e)
                 {
@@ -78,44 +87,48 @@ namespace GruppeHessNetworkAssignment.Network
             }
         }
 
+        /// <summary>
+        /// Determines what functionality to run depending on the returndata.
+        /// </summary>
         public void HandleReturnData()
         {
-            if (GameWorld.Instance.IsServer == false && returnData != null && GameWorld.Instance.Instantiated)
+            if (GameWorld.Instance.IsServer == false && ReturnData != null && GameWorld.Instance.Instantiated)
             {
+          
                 // Adds a new point once an enemy has been hit. "Point" is sent from the laser class.
-                if (returnData == "Point")
+                if (ReturnData == "Point")
                 {
                     Highscore.Instance.Points++;
                 }
 
-                if (returnData == "Lose hp")
+                if (ReturnData == "Lose hp")
                 {
                     GameWorld.Instance.PlayerServer.PlayerHealth--;
                 }
 
-                if (returnData.Contains("New|Laser"))
+                if (ReturnData.Contains("New|Laser"))
                 {
                     AddLasersAccordingToServer();
                 }
 
-                if (returnData.Contains("New|Enemy"))
+                if (ReturnData.Contains("New|Enemy"))
                 {
                     AddNewEnemies();
                 }
 
-                if (returnData.Contains("Update|Enemy"))
+                if (ReturnData.Contains("Update|Enemy"))
                 {
                     UpdateCurrentEnemies();
                 }
 
-                if (returnData.Contains("Destroy"))
+                if (ReturnData.Contains("Destroy"))
                 {
                     DeleteObjectsAccordingToServer();
                 }
 
-                if (returnData.Contains("Update|Player"))
+                if (ReturnData.Contains("Update|Player"))
                 {
-                    string[] inputParameters = returnData.Split('|');
+                    string[] inputParameters = ReturnData.Split('|');
 
                     float playPosX = float.Parse(inputParameters[2]);
                     float playposY = float.Parse(inputParameters[3]);
@@ -131,7 +144,7 @@ namespace GruppeHessNetworkAssignment.Network
         /// </summary>
         private void AddNewEnemies()
         {
-            string[] inputParameters = returnData.Split('|');
+            string[] inputParameters = ReturnData.Split('|');
 
             string objectType = inputParameters[1];
             int tmpID = Int32.Parse(inputParameters[2]);
@@ -148,7 +161,7 @@ namespace GruppeHessNetworkAssignment.Network
         /// </summary>
         private void UpdateCurrentEnemies()
         {
-            string[] inputParameters = returnData.Split('|');
+            string[] inputParameters = ReturnData.Split('|');
 
             string objectType = inputParameters[1];
             int tmpID = Int32.Parse(inputParameters[2]);
@@ -167,7 +180,7 @@ namespace GruppeHessNetworkAssignment.Network
         /// </summary>
         private void AddLasersAccordingToServer()
         {
-            string[] inputParameters = returnData.Split('|');
+            string[] inputParameters = ReturnData.Split('|');
 
             int tmpID = Int32.Parse(inputParameters[2]);
             float tmpX = float.Parse(inputParameters[3]);
@@ -183,7 +196,7 @@ namespace GruppeHessNetworkAssignment.Network
         /// </summary>
         private void DeleteObjectsAccordingToServer()
         {
-            string[] inputParameters = returnData.Split('|');
+            string[] inputParameters = ReturnData.Split('|');
 
             int tmpID = Int32.Parse(inputParameters[1]);
 
@@ -193,5 +206,15 @@ namespace GruppeHessNetworkAssignment.Network
                 GameWorld.Instance.Destroy(destroyedObject);
             }
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public void UpdateClient()
+        {
+            GameWorld.Instance.ClientInstance.Send("Update|Player|" + GameWorld.Instance.PlayerClient.Position.X + "|" + GameWorld.Instance.PlayerClient.Position.Y);
+        }
+
+        #endregion
     }
 }

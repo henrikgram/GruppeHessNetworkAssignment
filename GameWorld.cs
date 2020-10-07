@@ -19,48 +19,41 @@ namespace GruppeHessNetworkAssignment
     /// </summary>
     public class GameWorld : Game
     {
+        #region Fields
+
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
-        // Lists of gameobjects.
-        private List<GameObject> gameObjects = new List<GameObject>();
-        private List<GameObject> newGameObjects = new List<GameObject>();
-        private List<GameObject> deletedGameObjects = new List<GameObject>();
-
-        private TimeSpan timeTillNewInvasionForce = new TimeSpan(0, 0, 2);
-        private Random rnd = new Random(500);
-        private int screenHeight = 1000;
-
-        private int objectID = 0;
-        private UdpServerManager udpServer;
-        private UdpClientManager udpClient;
         private static GameWorld instance;
         private Highscore highscore;
-
-        private int tmpScore = 5;
-        private string tmpName = "Nej";
-        private string tmpTeamName;
-
         private bool isStartScreen = true;
-        private bool isServer = false;
+        private int objectID = 0;
 
-        private byte maxPlayers = 1;
+        #endregion
 
+        #region Properties
         public DBHandler DBHandlerInstance { get; private set; }
         public Player PlayerServer { get; private set; }
         public Player PlayerClient { get; private set; }
-        public UdpClientManager ClientInstance { get => udpClient; set => udpClient = value; }
-        public UdpServerManager ServerInstance { get => udpServer; set => udpServer = value; }
+        public UdpClientManager ClientInstance { get; set; }
+        public UdpServerManager ServerInstance { get; set; }
+
         public bool Instantiated { get; set; } = false;
-        public int ScreenHeight { get; } = 1000;
         public bool ProgramRunning { get; set; } = true;
-        public bool IsServer { get => isServer; }
+        public bool IsServer { get; private set; } = false;
         public bool SetUpServerPlayer { get; set; }
         public bool ShowHighscore { get; set; } = false;
+        public int ObjectID { get => objectID++; set => objectID = value; }
+        public int ScreenHeight { get; } = 1000;
         public Vector2 ScreenSize { get; private set; }
         public string TeamName { get; set; }
-        public int ObjectID { get => objectID++; set => objectID = value; }
 
+        //Lists to handle gameobjects
+        public List<GameObject> NewGameObjects { get; private set; } = new List<GameObject>();
+        public List<GameObject> DeletedGameObjects { get; private set; } = new List<GameObject>();
+        public List<GameObject> GameObjects { get; private set; } = new List<GameObject>();
+
+        #endregion
 
         public static GameWorld Instance
         {
@@ -74,14 +67,14 @@ namespace GruppeHessNetworkAssignment
             }
         }
 
-        public List<GameObject> NewGameObjects { get => newGameObjects; set => newGameObjects = value; }
-        public List<GameObject> GameObjects { get => gameObjects; }
-
         public GameWorld()
         {
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
         }
+
+
+        #region Methods
 
         /// <summary>
         /// Allows the game to perform any initialization it needs to before starting to run.
@@ -91,20 +84,6 @@ namespace GruppeHessNetworkAssignment
         /// </summary>
         protected override void Initialize()
         {
-            ////DbHandler.InsertIntoTable("NameTable", $"NULL, '{tmpName}'", new SQLiteConnection(DbHandler.LoadSQLiteConnectionString()));
-            ////DbHandler.InsertIntoTable("ScoreTable", $"NULL, 2, 500", new SQLiteConnection(DbHandler.LoadSQLiteConnectionString()));
-            //DbHandler.InsertIntoTable("Highscore", "NULL, 'Stinna', 500", new SQLiteConnection(DbHandler.LoadSQLiteConnectionString()));
-            //DbHandler.InsertIntoTable("Highscore", "NULL, 'Henrik', 1000", new SQLiteConnection(DbHandler.LoadSQLiteConnectionString()));
-            //DbHandler.InsertIntoTable("Highscore", "NULL, 'Signe', 800", new SQLiteConnection(DbHandler.LoadSQLiteConnectionString()));
-            //DbHandler.InsertIntoTable("Highscore", "NULL, 'Emma', 1400", new SQLiteConnection(DbHandler.LoadSQLiteConnectionString()));
-
-            //List<string> highscores = new List<string>();
-            //highscores = DbHandler.CreateHighscoreList();
-
-            //foreach (string value in highscores)
-            //{
-            //    Console.WriteLine(value);
-            //}
 
             ServerClientSetup();
 
@@ -137,38 +116,31 @@ namespace GruppeHessNetworkAssignment
                     new TcpServerManager();
                     //udpServer = new UdpServerManager();
                     highscore = new Highscore();
-                    isServer = true;
+                    IsServer = true;
                     isStartScreen = false;
                     Window.Title = "Server";
                     Console.Title = "Server";
 
-                    DBHandlerInstance = new DBHandler();
 
+                    //Create a database on the servers side.
+                    DBHandlerInstance = new DBHandler();
                     DBHandlerInstance.BuildDatabase();
                 }
 
                 // Instantiates a client, if the game starts in player mode.
                 else if (input == "C")
                 {
-                    //Console.WriteLine("What port would you like to connect to?");
-                    //udpClient = new UdpClientManager();
+                    //Instantiates a client, if the game starts in client / player mode.
 
-                    //Instantiates a client, if the game starts in client/player mode.
+                    Console.WriteLine("What IP would you like to connect to?");
+                    string ip = Console.ReadLine();
 
-                    //Console.WriteLine("What IP would you like to connect to?");
-                    //string ip = Console.ReadLine();
+                    Console.WriteLine("Write the server password: ");
+                    string password = Console.ReadLine();
 
-                    //Console.WriteLine("What port would you like to connect to?");
-                    //string port = Console.ReadLine();
+                    new TcpClientManager(ip, password);
 
-                    //Console.WriteLine("Write the server password: ");
-                    //string password = Console.ReadLine();
-
-                    //new TcpClientManager(ip, int.Parse(port), password);
-
-                    new TcpClientManager("192.168.87.159", /*11000,*/ "12345678");
-
-                    isServer = false;
+                    IsServer = false;
                     isStartScreen = false;
                 }
 
@@ -179,14 +151,14 @@ namespace GruppeHessNetworkAssignment
                 }
             }
 
-            if (isServer)
+            if (IsServer)
             {
-                udpServer = new UdpServerManager();
+                ServerInstance = new UdpServerManager();
             }
 
             else
             {
-                udpClient = new UdpClientManager();
+                ClientInstance = new UdpClientManager();
             }
         }
 
@@ -207,7 +179,7 @@ namespace GruppeHessNetworkAssignment
         /// </summary>
         protected override void UnloadContent()
         {
-            // TODO: Unload any non ContentManager content here
+           
         }
 
         /// <summary>
@@ -221,81 +193,63 @@ namespace GruppeHessNetworkAssignment
             {
                 // Makes sure a server is set up first.
                 SetUpServerPlayer = true;
-                gameObjects.Add(PlayerServer = new Player(new Vector2(0, ScreenSize.Y - Asset.playerSprite.Height)));
-                gameObjects.Add(PlayerClient = new Player(new Vector2(ScreenSize.X - Asset.clientPlayerSprite.Width, ScreenSize.Y - Asset.clientPlayerSprite.Height)));
-
-                //PlayerServer.TeamName = tmpTeamName;
+                GameObjects.Add(PlayerServer = new Player(new Vector2(0, ScreenSize.Y - Asset.PlayerSprite.Height)));
+                GameObjects.Add(PlayerClient = new Player(new Vector2(ScreenSize.X - Asset.ClientPlayerSprite.Width, ScreenSize.Y - Asset.ClientPlayerSprite.Height)));
 
                 Instantiated = true;
             }
 
+            // Makes sure update only runs while the players are still alive.
+            // So the game "stops" once the players die.
             if (!PlayerServer.IsDead)
             {
-                //For two player, so the server can send a pos back to the client.
-                if (isServer)
+                if (IsServer)
                 {
-                    AddNewEnemyShipsServer();
-                    SendEnemyShipInfoToClient();
-
-                    if (timeTillNewInvasionForce > TimeSpan.Zero)
-                    {
-                        timeTillNewInvasionForce -= gameTime.ElapsedGameTime;
-                    }
-
-                    udpServer.Send("Update|Player|" + PlayerServer.Position.X + "|" + PlayerServer.Position.Y);
+                    ServerInstance.UpdateServer(gameTime);
                 }
-
-                // Makes sure the client sends the player's updated position to the server.
-                if (!isServer)
+                else
                 {
-                    udpClient.Send("Update|Player|" + PlayerClient.Position.X + "|" + PlayerClient.Position.Y);
+                    ClientInstance.UpdateClient();
                 }
-
+               
                 // To exit the game.
                 if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 {
-                    // Makes sure all the threads stop running.
+                    // Makes sure all the threads stop running once the game shuts down.
                     ProgramRunning = false;
                     Exit();
                 }
 
-                //ads all objects in list-newobjects to list-gameobjects.
-                gameObjects.AddRange(NewGameObjects);
+                //adds all bjects in list-newobjects to list-gameobjects.
+                GameObjects.AddRange(NewGameObjects);
                 //deletes objects in list-newobjects.
                 NewGameObjects.Clear();
 
-                //foreach (GameObject gameObject in gameObjects)
-                for (int i = 0; i < gameObjects.Count; i++)
-                {
-                    gameObjects[i].Update(gameTime);
 
-                    foreach (GameObject other in gameObjects)
+                // Runs the update method and checkcollision method for all gameobjets on the GameObjects list.
+                for (int i = 0; i < GameObjects.Count; i++)
+                {
+                    GameObjects[i].Update(gameTime);
+
+                    foreach (GameObject other in GameObjects)
                     {
-                        gameObjects[i].CheckCollision(other);
+                        GameObjects[i].CheckCollision(other);
                     }
+
                 }
 
-                for (int i = 0; i < deletedGameObjects.Count; i++)
+                // Makes sure to remove all deleted objects from the GameObjects list.
+                for (int i = 0; i < DeletedGameObjects.Count; i++)
                 {
-                    gameObjects.Remove(deletedGameObjects[i]);
+                    GameObjects.Remove(DeletedGameObjects[i]);
                 }
 
-                //deletes objects in list-deleteobjects.
-                deletedGameObjects.Clear();
+                // Deletes objects in list-deleteobjects.
+                DeletedGameObjects.Clear();
             }
-
-            if (PlayerServer.IsDead && IsServer && ShowHighscore)
+            else
             {
-                List<string> highscores = new List<string>();
-
-                highscores = DBHandlerInstance.CreateHighscoreList();
-
-                foreach (string score in highscores)
-                {
-                    Console.WriteLine(score);
-                }
-
-                ShowHighscore = false;
+                ServerInstance.PrintHighscores();
             }
 
             base.Update(gameTime);
@@ -311,16 +265,18 @@ namespace GruppeHessNetworkAssignment
 
             spriteBatch.Begin();
 
+            // Draws the point and health strings.
             if (Instantiated)
             {
-                spriteBatch.DrawString(Asset.scoreFont, $"Points: {Highscore.Instance.Points}", new Vector2(0, ScreenHeight / 25), Color.DarkRed, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
-                spriteBatch.DrawString(Asset.scoreFont, $"Health: {PlayerServer.PlayerHealth}", new Vector2(0, 0), Color.DarkBlue, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
+                spriteBatch.DrawString(Asset.ScoreFont, $"Points: {Highscore.Instance.Points}", new Vector2(0, ScreenHeight / 25), Color.Orange, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
+                spriteBatch.DrawString(Asset.ScoreFont, $"Health: {PlayerServer.PlayerHealth}", new Vector2(0, 0), Color.Yellow, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
             }
 
-            foreach (GameObject gameObject in gameObjects)
+            // Makes sure to draw all gameobjects and collisionboxes.
+            foreach (GameObject gameObject in GameObjects)
             {
                 gameObject.Draw(spriteBatch);
-                DrawCollisionBox(gameObject);
+                //DrawCollisionBox(gameObject);
             }
 
             spriteBatch.End();
@@ -328,16 +284,28 @@ namespace GruppeHessNetworkAssignment
             base.Draw(gameTime);
         }
 
+        /// <summary>
+        /// Adds a new objects to the NewGameObjects list.
+        /// </summary>
+        /// <param name="gameObject"></param>
         public void Instantiate(GameObject gameObject)
         {
             NewGameObjects.Add(gameObject);
         }
 
+        /// <summary>
+        /// Adds an object to the DeletedGameObjects list when objects need to be deleted from the game.
+        /// </summary>
+        /// <param name="gameObject"></param>
         public void Destroy(GameObject gameObject)
         {
-            deletedGameObjects.Add(gameObject);
+            DeletedGameObjects.Add(gameObject);
         }
 
+        /// <summary>
+        /// Draws all collision boxes in the game.
+        /// </summary>
+        /// <param name="gameObject"></param>
         private void DrawCollisionBox(GameObject gameObject)
         {
             /// Draws the collisionboxes.
@@ -348,42 +316,12 @@ namespace GruppeHessNetworkAssignment
             Rectangle leftLine = new Rectangle(collisionBox.X, collisionBox.Y, 1, collisionBox.Height);
 
             /// Makes sure the collisionbox adjusts to each sprite.
-            spriteBatch.Draw(Asset.collisionBox, topLine, null, Color.Red, 0, Vector2.Zero, SpriteEffects.None, 1);
-            spriteBatch.Draw(Asset.collisionBox, bottomLine, null, Color.Red, 0, Vector2.Zero, SpriteEffects.None, 1);
-            spriteBatch.Draw(Asset.collisionBox, rightLine, null, Color.Red, 0, Vector2.Zero, SpriteEffects.None, 1);
-            spriteBatch.Draw(Asset.collisionBox, leftLine, null, Color.Red, 0, Vector2.Zero, SpriteEffects.None, 1);
+            spriteBatch.Draw(Asset.CollisionBox, topLine, null, Color.Red, 0, Vector2.Zero, SpriteEffects.None, 1);
+            spriteBatch.Draw(Asset.CollisionBox, bottomLine, null, Color.Red, 0, Vector2.Zero, SpriteEffects.None, 1);
+            spriteBatch.Draw(Asset.CollisionBox, rightLine, null, Color.Red, 0, Vector2.Zero, SpriteEffects.None, 1);
+            spriteBatch.Draw(Asset.CollisionBox, leftLine, null, Color.Red, 0, Vector2.Zero, SpriteEffects.None, 1);
         }
 
-        /// <summary>
-        /// Sends a wave of enemyships at set intervals of time. Also sends a message to the client to create ships at the specified
-        /// positions
-        /// </summary>
-        private void AddNewEnemyShipsServer()
-        {
-            if (timeTillNewInvasionForce <= TimeSpan.Zero)
-            {
-                for (int i = 0; i < 5; i++)
-                {
-                    Enemy tmpEnemy = new Enemy(new Vector2(rnd.Next(0, (int)ScreenSize.X - Asset.enemySprite.Width), 0 - Asset.enemySprite.Height)/*, enemyID*/);
-                    NewGameObjects.Add(tmpEnemy);
-
-                    udpServer.Send("New|Enemy|" + tmpEnemy.ID + "|" + tmpEnemy.Position.X + "|" + tmpEnemy.Position.Y);
-                }
-                timeTillNewInvasionForce = new TimeSpan(0, 0, 5);
-            }
-        }
-
-        /// <summary>
-        /// Sends information about the enemmy ships location to the client so their positions can be updated.
-        /// </summary>
-        private void SendEnemyShipInfoToClient()
-        {
-            List<GameObject> enemies = (gameObjects.FindAll(e => e is Enemy));
-            for (int i = 0; i < enemies.Count; i++)
-            {
-                Enemy currentEnemy = (Enemy)enemies[i];
-                udpServer.Send("Update|Enemy|" + currentEnemy.ID + "|" + currentEnemy.Position.X + "|" + currentEnemy.Position.Y);
-            }
-        }
+        #endregion
     }
 }

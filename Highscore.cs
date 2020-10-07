@@ -31,19 +31,22 @@ namespace GruppeHessNetworkAssignment
 
         }
 
+        /// <summary>
+        /// Update method for Highscore.
+        /// </summary>
+        /// <param name="gameTime"></param>
         public override void Update(GameTime gameTime)
         {
             // Has nothing it needs to update.
         }
 
+        /// <summary>
+        /// Collision method for Highscore.
+        /// </summary>
+        /// <param name="other"></param>
         public override void OnCollision(GameObject other)
         {
             // Has no collision.
         }
-    }
-
-    public struct SaveGameData
-    {
-        public int Score;
     }
 }
