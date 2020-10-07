@@ -135,11 +135,6 @@ namespace GruppeHessNetworkAssignment.Network
                 {
                     AddLasersAccordingToClient();
                 }
-
-                if (returnData == "P")
-                {
-                    GameWorld.Instance.PlayerCount++;
-                }
                 //// Adds a new point once an enemy has been hit. "Point" is sent from the laser class.
                 //else if (serverInput == "Point")
                 //{
