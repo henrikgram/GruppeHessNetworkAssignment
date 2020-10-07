@@ -39,13 +39,14 @@ namespace GruppeHessNetworkAssignment
 
         private int tmpScore = 5;
         private string tmpName = "Nej";
+        private string tmpTeamName;
 
         private bool isStartScreen = true;
         private bool isServer = false;
 
         private byte maxPlayers = 1;
 
-        public DBHandler DbHandler { get; private set; }
+        public DBHandler DBHandlerInstance { get; private set; }
         public Player PlayerServer { get; private set; }
         public Player PlayerClient { get; private set; }
         public UdpClientManager ClientInstance { get => udpClient; set => udpClient = value; }
@@ -55,8 +56,9 @@ namespace GruppeHessNetworkAssignment
         public bool ProgramRunning { get; set; } = true;
         public bool IsServer { get => isServer; }
         public bool SetUpServerPlayer { get; set; }
+        public bool ShowHighscore { get; set; } = false;
         public Vector2 ScreenSize { get; private set; }
-
+        public string TeamName { get; set; }
         public int ObjectID { get => objectID++; set => objectID = value; }
 
 
@@ -89,23 +91,22 @@ namespace GruppeHessNetworkAssignment
         /// </summary>
         protected override void Initialize()
         {
-            DbHandler = new DBHandler();
+            ////DbHandler.InsertIntoTable("NameTable", $"NULL, '{tmpName}'", new SQLiteConnection(DbHandler.LoadSQLiteConnectionString()));
+            ////DbHandler.InsertIntoTable("ScoreTable", $"NULL, 2, 500", new SQLiteConnection(DbHandler.LoadSQLiteConnectionString()));
+            //DbHandler.InsertIntoTable("Highscore", "NULL, 'Stinna', 500", new SQLiteConnection(DbHandler.LoadSQLiteConnectionString()));
+            //DbHandler.InsertIntoTable("Highscore", "NULL, 'Henrik', 1000", new SQLiteConnection(DbHandler.LoadSQLiteConnectionString()));
+            //DbHandler.InsertIntoTable("Highscore", "NULL, 'Signe', 800", new SQLiteConnection(DbHandler.LoadSQLiteConnectionString()));
+            //DbHandler.InsertIntoTable("Highscore", "NULL, 'Emma', 1400", new SQLiteConnection(DbHandler.LoadSQLiteConnectionString()));
 
-            DbHandler.BuildDatabase();
-            //DbHandler.InsertIntoTable("NameTable", $"NULL, '{tmpName}'", new SQLiteConnection(DbHandler.LoadSQLiteConnectionString()));
-            //DbHandler.InsertIntoTable("ScoreTable", $"NULL, 2, 500", new SQLiteConnection(DbHandler.LoadSQLiteConnectionString()));
-            DbHandler.InsertIntoTable("Highscore", "NULL, 'Stinna', 500", new SQLiteConnection(DbHandler.LoadSQLiteConnectionString()));
-            DbHandler.InsertIntoTable("Highscore", "NULL, 'Henrik', 1000", new SQLiteConnection(DbHandler.LoadSQLiteConnectionString()));
-            DbHandler.InsertIntoTable("Highscore", "NULL, 'Signe', 800", new SQLiteConnection(DbHandler.LoadSQLiteConnectionString()));
-            DbHandler.InsertIntoTable("Highscore", "NULL, 'Emma', 1400", new SQLiteConnection(DbHandler.LoadSQLiteConnectionString()));
+            //List<string> highscores = new List<string>();
+            //highscores = DbHandler.CreateHighscoreList();
 
-            List<string> highscores = new List<string>();
-            highscores = DbHandler.CreateHighscoreList();
+            //foreach (string value in highscores)
+            //{
+            //    Console.WriteLine(value);
+            //}
 
-            foreach (string value in highscores)
-            {
-                Console.WriteLine(value);
-            }
+            ServerClientSetup();
 
             // CHANGES THE SCREEN SIZE.
             graphics.PreferredBackBufferHeight = ScreenHeight;
@@ -130,6 +131,9 @@ namespace GruppeHessNetworkAssignment
                 // Instantiates the server, if the game starts in server mode.
                 if (input == "S")
                 {
+                    Console.WriteLine("Write the team name: ");
+                    TeamName = Console.ReadLine();
+
                     new TcpServerManager();
                     //udpServer = new UdpServerManager();
                     highscore = new Highscore();
@@ -137,6 +141,10 @@ namespace GruppeHessNetworkAssignment
                     isStartScreen = false;
                     Window.Title = "Server";
                     Console.Title = "Server";
+
+                    DBHandlerInstance = new DBHandler();
+
+                    DBHandlerInstance.BuildDatabase();
                 }
 
                 // Instantiates a client, if the game starts in player mode.
@@ -158,7 +166,7 @@ namespace GruppeHessNetworkAssignment
 
                     //new TcpClientManager(ip, int.Parse(port), password);
 
-                    new TcpClientManager("192.168.0.100", /*11000,*/ "12345678");
+                    new TcpClientManager("192.168.87.159", /*11000,*/ "12345678");
 
                     isServer = false;
                     isStartScreen = false;
@@ -216,60 +224,79 @@ namespace GruppeHessNetworkAssignment
                 gameObjects.Add(PlayerServer = new Player(new Vector2(0, ScreenSize.Y - Asset.playerSprite.Height)));
                 gameObjects.Add(PlayerClient = new Player(new Vector2(ScreenSize.X - Asset.clientPlayerSprite.Width, ScreenSize.Y - Asset.clientPlayerSprite.Height)));
 
+                //PlayerServer.TeamName = tmpTeamName;
+
                 Instantiated = true;
             }
 
-            //For two player, so the server can send a pos back to the client.
-            if (isServer)
+            if (!PlayerServer.IsDead)
             {
-                AddNewEnemyShipsServer();
-                SendEnemyShipInfoToClient();
-
-                if (timeTillNewInvasionForce > TimeSpan.Zero)
+                //For two player, so the server can send a pos back to the client.
+                if (isServer)
                 {
-                    timeTillNewInvasionForce -= gameTime.ElapsedGameTime;
+                    AddNewEnemyShipsServer();
+                    SendEnemyShipInfoToClient();
+
+                    if (timeTillNewInvasionForce > TimeSpan.Zero)
+                    {
+                        timeTillNewInvasionForce -= gameTime.ElapsedGameTime;
+                    }
+
+                    udpServer.Send("Update|Player|" + PlayerServer.Position.X + "|" + PlayerServer.Position.Y);
                 }
 
-                udpServer.Send("Update|Player|" + PlayerServer.Position.X + "|" + PlayerServer.Position.Y);
-            }
-
-            // Makes sure the client sends the player's updated position to the server.
-            if (!isServer)
-            {
-                udpClient.Send("Update|Player|" + PlayerClient.Position.X + "|" + PlayerClient.Position.Y);
-            }
-
-            // To exit the game.
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
-            {
-                // Makes sure all the threads stop running.
-                ProgramRunning = false;
-                Exit();
-            }
-
-            //ads all objects in list-newobjects to list-gameobjects.
-            gameObjects.AddRange(NewGameObjects);
-            //deletes objects in list-newobjects.
-            NewGameObjects.Clear();
-
-            //foreach (GameObject gameObject in gameObjects)
-            for (int i = 0; i < gameObjects.Count; i++)
-            {
-                gameObjects[i].Update(gameTime);
-
-                foreach (GameObject other in gameObjects)
+                // Makes sure the client sends the player's updated position to the server.
+                if (!isServer)
                 {
-                    gameObjects[i].CheckCollision(other);
+                    udpClient.Send("Update|Player|" + PlayerClient.Position.X + "|" + PlayerClient.Position.Y);
                 }
+
+                // To exit the game.
+                if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
+                {
+                    // Makes sure all the threads stop running.
+                    ProgramRunning = false;
+                    Exit();
+                }
+
+                //ads all objects in list-newobjects to list-gameobjects.
+                gameObjects.AddRange(NewGameObjects);
+                //deletes objects in list-newobjects.
+                NewGameObjects.Clear();
+
+                //foreach (GameObject gameObject in gameObjects)
+                for (int i = 0; i < gameObjects.Count; i++)
+                {
+                    gameObjects[i].Update(gameTime);
+
+                    foreach (GameObject other in gameObjects)
+                    {
+                        gameObjects[i].CheckCollision(other);
+                    }
+                }
+
+                for (int i = 0; i < deletedGameObjects.Count; i++)
+                {
+                    gameObjects.Remove(deletedGameObjects[i]);
+                }
+
+                //deletes objects in list-deleteobjects.
+                deletedGameObjects.Clear();
             }
 
-            for (int i = 0; i < deletedGameObjects.Count; i++)
+            if (PlayerServer.IsDead && IsServer && ShowHighscore)
             {
-                gameObjects.Remove(deletedGameObjects[i]);
-            }
+                List<string> highscores = new List<string>();
 
-            //deletes objects in list-deleteobjects.
-            deletedGameObjects.Clear();
+                highscores = DBHandlerInstance.CreateHighscoreList();
+
+                foreach (string score in highscores)
+                {
+                    Console.WriteLine(score);
+                }
+
+                ShowHighscore = false;
+            }
 
             base.Update(gameTime);
         }

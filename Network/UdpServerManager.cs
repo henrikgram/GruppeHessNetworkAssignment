@@ -38,17 +38,20 @@ namespace GruppeHessNetworkAssignment.Network
         /// </summary>
         public void Send(string message)
         {
-            try
+            //if (!GameWorld.Instance.PlayerClient.IsDead)
             {
-                udpClient.Connect(inhRemoteIPEndPoint.Address, remotePort);
+                try
+                {
+                    udpClient.Connect(inhRemoteIPEndPoint.Address, remotePort);
 
-                Byte[] sendBytes = Encoding.ASCII.GetBytes(message);
-                udpClient.Send(sendBytes, sendBytes.Length);
-            }
-            catch (Exception e)
-            {
-                // Writes out the exception if any errors occur.
-                Console.WriteLine(e.ToString());
+                    Byte[] sendBytes = Encoding.ASCII.GetBytes(message);
+                    udpClient.Send(sendBytes, sendBytes.Length);
+                }
+                catch (Exception e)
+                {
+                    // Writes out the exception if any errors occur.
+                    Console.WriteLine(e.ToString());
+                }
             }
         }
 

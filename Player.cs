@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
+using System.Data.SQLite;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -19,6 +20,7 @@ namespace GruppeHessNetworkAssignment
         private Player player;
 
         public int PlayerHealth { get; set; }
+        public bool IsDead { get; private set; } = false;
 
         public Player(Vector2 position)
         {
@@ -167,7 +169,15 @@ namespace GruppeHessNetworkAssignment
 
         public void Death()
         {
-            // Insert end game lose shit. Maybe a loser screen (just a sprite font is fine).
+            // Insert end game lose shit. Maybe a loser screen (just a sprite font is fine). Hilsen Signe
+            if (GameWorld.Instance.IsServer && !IsDead)
+            {
+                GameWorld.Instance.DBHandlerInstance.InsertIntoTable("Highscore", $"NULL, '{GameWorld.Instance.TeamName}', {Highscore.Instance.Points}",
+                                                                      new SQLiteConnection(GameWorld.Instance.DBHandlerInstance.LoadSQLiteConnectionString()));
+                GameWorld.Instance.ShowHighscore = true;
+            }
+
+            IsDead = true;
         }
     }
 }
