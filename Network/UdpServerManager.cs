@@ -25,7 +25,7 @@ namespace GruppeHessNetworkAssignment.Network
 
         public UdpServerManager()
         {
-            //remoteIpEndPoint = new IPEndPoint(IPAddress.Any, 0);
+            remoteIpEndPoint = new IPEndPoint(IPAddress.Any, 0);
 
             Thread receivingThread = new Thread(Recieve);
             receivingThread.IsBackground = true;
@@ -69,11 +69,20 @@ namespace GruppeHessNetworkAssignment.Network
                     //Blocks until a message returns on this socket from a remote host.
                     Byte[] receiveBytes = receivingUdpClient.Receive(ref remoteIpEndPoint);
 
-                    string returnData = Encoding.ASCII.GetString(receiveBytes);
+                    returnData = Encoding.ASCII.GetString(receiveBytes);
 
                     Console.WriteLine($"Server received: {returnData}");
 
                     HandleOtherPlayer();
+                    //if (returnData.Contains("Update|Player"))
+                    //{
+                    //    string[] inputParameters = returnData.Split('|');
+
+                    //    float playPosX = float.Parse(inputParameters[2]);
+                    //    float playposY = float.Parse(inputParameters[3]);
+
+                    //    GameWorld.Instance.PlayerClient.Position = new Vector2(playPosX, playposY);
+                    //}
                 }
                 catch (Exception e)
                 {
@@ -121,9 +130,8 @@ namespace GruppeHessNetworkAssignment.Network
         {
             if (GameWorld.Instance.IsServer == true && returnData != null && GameWorld.Instance.Instantiated)
             {
-                string serverInput = returnData;
 
-                if (serverInput.Contains("New|Laser"))
+                if (returnData.Contains("New|Laser"))
                 {
                     AddLasersAccordingToClient();
                 }
@@ -139,9 +147,9 @@ namespace GruppeHessNetworkAssignment.Network
                     DeleteObjectsAccordingToClient();
                 }
 
-                if (serverInput.Contains("Update|Player"))
+                if (returnData.Contains("Update|Player"))
                 {
-                    string[] inputParameters = serverInput.Split('|');
+                    string[] inputParameters = returnData.Split('|');
 
                     float playPosX = float.Parse(inputParameters[2]);
                     float playposY = float.Parse(inputParameters[3]);

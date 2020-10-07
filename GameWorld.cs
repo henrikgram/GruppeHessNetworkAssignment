@@ -31,7 +31,6 @@ namespace GruppeHessNetworkAssignment
         private Random rnd = new Random(500);
         private int screenHeight = 1000;
 
-        private int enemyID = 0;
         private int objectID = 0;
         private UdpServerManager udpServer;
         private UdpClientManager udpClient;
@@ -43,7 +42,6 @@ namespace GruppeHessNetworkAssignment
 
         private bool isStartScreen = true;
         private bool isServer = false;
-        //private bool gameIsStarted = false;
 
         private byte maxPlayers = 1;
 
@@ -53,7 +51,6 @@ namespace GruppeHessNetworkAssignment
         public UdpClientManager ClientInstance { get => udpClient; set => udpClient = value; }
         public UdpServerManager ServerInstance { get => udpServer; set => udpServer = value; }
         public bool Instantiated { get; set; } = false;
-        public byte PlayerCount { get; set; } = 0;
         public int ScreenHeight { get; } = 1000;
         public bool ProgramRunning { get; set; } = true;
         public bool IsServer { get => isServer; }
@@ -138,6 +135,8 @@ namespace GruppeHessNetworkAssignment
                     highscore = new Highscore();
                     isServer = true;
                     isStartScreen = false;
+                    Window.Title = "Server";
+                    Console.Title = "Server";
                 }
 
                 // Instantiates a client, if the game starts in player mode.
@@ -159,7 +158,7 @@ namespace GruppeHessNetworkAssignment
 
                     //new TcpClientManager(ip, int.Parse(port), password);
 
-                    new TcpClientManager("192.168.87.159", /*11000,*/ "12345678");
+                    new TcpClientManager("192.168.0.100", /*11000,*/ "12345678");
 
                     isServer = false;
                     isStartScreen = false;
@@ -175,13 +174,11 @@ namespace GruppeHessNetworkAssignment
             if (isServer)
             {
                 udpServer = new UdpServerManager();
-                //gameIsStarted = true;
             }
 
-            else if (!isServer)
+            else
             {
                 udpClient = new UdpClientManager();
-                //gameIsStarted = true;
             }
         }
 
@@ -191,18 +188,9 @@ namespace GruppeHessNetworkAssignment
         /// </summary>
         protected override void LoadContent()
         {
-            // TODO: use this.Content to load your game content here
-
-            //if (gameIsStarted)
-            //{
-            // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
             Asset.LoadContent(Content);
-
-            //gameObjects.Add(player = new Player(new Vector2(ScreenSize.X / 2, ScreenSize.Y - Asset.playerSprite.Height)));
-            //gameObjects.Add(new Enemy(new Vector2(300, 300)));
-            //}
         }
 
         /// <summary>
@@ -221,105 +209,69 @@ namespace GruppeHessNetworkAssignment
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-            // Makes sure the PlayerCount goes up everytime a new player joins the game.
-            // In the Client constructor, the message P is send everytime a new client is added.
-            if (isServer && ServerInstance.ReturnData == "P")
+            if (!Instantiated)
             {
-                PlayerCount++;
-                // Resets ReturnData, so this message doesn't have to be in Player as an empty "else if" sentence.
-                ServerInstance.ReturnData = null;
+                // Makes sure a server is set up first.
+                SetUpServerPlayer = true;
+                gameObjects.Add(PlayerServer = new Player(new Vector2(0, ScreenSize.Y - Asset.playerSprite.Height)));
+                gameObjects.Add(PlayerClient = new Player(new Vector2(ScreenSize.X - Asset.clientPlayerSprite.Width, ScreenSize.Y - Asset.clientPlayerSprite.Height)));
+
+                Instantiated = true;
             }
 
-            // Once the max amount of players has joined, the game can start.
-            if (PlayerCount == maxPlayers/* && gameIsStarted*/)
+            //For two player, so the server can send a pos back to the client.
+            if (isServer)
             {
-                // Only draws the player once all players has joined the game.
-                // For server below.
-                //if (isServer && !Instantiated)
-                //{
-                //    gameObjects.Add(PlayerServer = new Player(new Vector2(0, ScreenSize.Y - Asset.playerSprite.Height)));
-                //    Instantiated = true;
-                //}
-                // Only draws the player once all players has joined the game.
-                // For client below.
-                if (!Instantiated)
-                {
-                    // Makes sure a server is set up first.
-                    SetUpServerPlayer = true;
-                    gameObjects.Add(PlayerServer = new Player(new Vector2(0, ScreenSize.Y - Asset.playerSprite.Height)));
-                    gameObjects.Add(PlayerClient = new Player(new Vector2(ScreenSize.X - Asset.clientPlayerSprite.Width, ScreenSize.Y - Asset.clientPlayerSprite.Height)));
+                AddNewEnemyShipsServer();
+                SendEnemyShipInfoToClient();
 
-                    Instantiated = true;
+                if (timeTillNewInvasionForce > TimeSpan.Zero)
+                {
+                    timeTillNewInvasionForce -= gameTime.ElapsedGameTime;
                 }
 
-                //For two player, so the server can send a pos back to the client.
-                if (isServer)
-                {
-                    AddNewEnemyShipsServer();
-                    SendEnemyShipInfoToClient();
-
-                    if (timeTillNewInvasionForce > TimeSpan.Zero)
-                    {
-                        timeTillNewInvasionForce -= gameTime.ElapsedGameTime;
-                    }
-
-                    udpServer.Send("Update|Player|" + PlayerServer.Position.X + "|" + PlayerServer.Position.Y);
-                }
-
-                // Makes sure the client sends the player's updated position to the server.
-                if (!isServer)
-                {
-                    //client.Send(PlayerClient.Position.X.ToString());
-
-                    udpClient.Send("Update|Player|" + PlayerClient.Position.X + "|" + PlayerClient.Position.Y);
-
-                    //try
-                    //{
-                    //    AddNewEnemyShipsClient();
-                    //}
-                    //catch (Exception e)
-                    //{
-
-                    //    Console.WriteLine(e);
-                    //}
-                }
-
-                // To exit the game.
-                if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
-                {
-                    // Makes sure all the threads stop running.
-                    ProgramRunning = false;
-                    Exit();
-                }
-
-                //ads all objects in list-newobjects to list-gameobjects.
-                gameObjects.AddRange(NewGameObjects);
-                //deletes objects in list-newobjects.
-                NewGameObjects.Clear();
-
-                //foreach (GameObject gameObject in gameObjects)
-                for (int i = 0; i < gameObjects.Count; i++)
-                {
-                    gameObjects[i].Update(gameTime);
-
-                    foreach (GameObject other in gameObjects)
-                    {
-                        gameObjects[i].CheckCollision(other);
-                    }
-                }
-
-                for (int i = 0; i < deletedGameObjects.Count; i++)
-                {
-                    gameObjects.Remove(deletedGameObjects[i]);
-                }
-
-                //deletes objects in list-deleteobjects.
-                deletedGameObjects.Clear();
-
-                // TODO: Add your update logic here
-
-                base.Update(gameTime);
+                udpServer.Send("Update|Player|" + PlayerServer.Position.X + "|" + PlayerServer.Position.Y);
             }
+
+            // Makes sure the client sends the player's updated position to the server.
+            if (!isServer)
+            {
+                udpClient.Send("Update|Player|" + PlayerClient.Position.X + "|" + PlayerClient.Position.Y);
+            }
+
+            // To exit the game.
+            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
+            {
+                // Makes sure all the threads stop running.
+                ProgramRunning = false;
+                Exit();
+            }
+
+            //ads all objects in list-newobjects to list-gameobjects.
+            gameObjects.AddRange(NewGameObjects);
+            //deletes objects in list-newobjects.
+            NewGameObjects.Clear();
+
+            //foreach (GameObject gameObject in gameObjects)
+            for (int i = 0; i < gameObjects.Count; i++)
+            {
+                gameObjects[i].Update(gameTime);
+
+                foreach (GameObject other in gameObjects)
+                {
+                    gameObjects[i].CheckCollision(other);
+                }
+            }
+
+            for (int i = 0; i < deletedGameObjects.Count; i++)
+            {
+                gameObjects.Remove(deletedGameObjects[i]);
+            }
+
+            //deletes objects in list-deleteobjects.
+            deletedGameObjects.Clear();
+
+            base.Update(gameTime);
         }
 
         /// <summary>
@@ -329,8 +281,6 @@ namespace GruppeHessNetworkAssignment
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.Black);
-
-            // TODO: Add your drawing code here
 
             spriteBatch.Begin();
 
@@ -377,6 +327,10 @@ namespace GruppeHessNetworkAssignment
             spriteBatch.Draw(Asset.collisionBox, leftLine, null, Color.Red, 0, Vector2.Zero, SpriteEffects.None, 1);
         }
 
+        /// <summary>
+        /// Sends a wave of enemyships at set intervals of time. Also sends a message to the client to create ships at the specified
+        /// positions
+        /// </summary>
         private void AddNewEnemyShipsServer()
         {
             if (timeTillNewInvasionForce <= TimeSpan.Zero)
@@ -387,7 +341,6 @@ namespace GruppeHessNetworkAssignment
                     NewGameObjects.Add(tmpEnemy);
 
                     udpServer.Send("New|Enemy|" + tmpEnemy.ID + "|" + tmpEnemy.Position.X + "|" + tmpEnemy.Position.Y);
-                    //enemyID++;
                 }
                 timeTillNewInvasionForce = new TimeSpan(0, 0, 5);
             }
