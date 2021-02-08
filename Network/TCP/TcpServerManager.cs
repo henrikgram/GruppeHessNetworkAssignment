@@ -7,40 +7,48 @@ using System.Threading;
 
 namespace GruppeHessNetworkAssignment.Network
 {
+    /// <summary>
+    /// For managing the Server side of the Tcp connection.
+    /// </summary>
     public class TcpServerManager : Server
     {
         private static TcpListener tcpServer;
 
+        //The password used to verify the client attempting to connect.
         private static string password;
 
         private static Thread clientThread;
+
 
         /// <summary>
         /// Constructs a TCPServerManager.
         /// </summary>
         public TcpServerManager()
         {
-            StartTcpServer(serverPort);
+            StartTcpServer();
         }
 
 
+        #region Methods
         /// <summary>
         /// Starts and handles a Tcp Server.
         /// </summary>
-        /// <param name="port"></param>
-        public void StartTcpServer(int port)
+        public void StartTcpServer()
         {
-            tcpServer = new TcpListener(IPAddress.Any, port);
+            tcpServer = new TcpListener(IPAddress.Any, serverPort);
             tcpServer.Start();
 
             //The servers endpoint.
             IPEndPoint endPoint = (IPEndPoint)tcpServer.LocalEndpoint;
 
+            //Get the IP so it can be shown to the user in the console.
+            //This is so the server host can forward the IP to the client.
             string localIPAddress = GetLocalIP();
 
-            //password = GeneratePassword();
-            password = "12345678";
-
+            //A new random password is generated when a Tcp server starts.
+            //Server host must forward the password to the client.
+            password = GeneratePassword();
+         
             Console.WriteLine($"Server on socket: {localIPAddress}:{endPoint.Port}");
             Console.WriteLine($"Server password: {password}");
             Console.WriteLine("Waiting for a connection...");
@@ -48,16 +56,14 @@ namespace GruppeHessNetworkAssignment.Network
             AcceptTcpClient();
         }
 
+
         /// <summary>
-        /// //Loop clients. This is used to handle clients, also more than one client.
+        /// Accept clients. This is used to handle clients.
         /// </summary>
         public void AcceptTcpClient()
         {
             //Instantiate a client that has been accepted to the server.
             TcpClient newTcpClient = tcpServer.AcceptTcpClient();
-
-            //The clients endpoint (socket).
-            IPEndPoint endPoint = (IPEndPoint)newTcpClient.Client.RemoteEndPoint;
 
             Console.WriteLine("New Tcp client!");
 
@@ -67,10 +73,11 @@ namespace GruppeHessNetworkAssignment.Network
             clientThread.Start(newTcpClient);
         }
 
+
         /// <summary>
         /// Manage network streams between server and client.
         /// </summary>
-        /// <param name="obj"></param>
+        /// <param name="obj">Put an instance of a Tcp client here.</param>
         public static void HandleTcpClient(object obj)
         {
             //Create the tcp client. It's the same client that was previously accepted to the server (obj parameter).
@@ -87,16 +94,18 @@ namespace GruppeHessNetworkAssignment.Network
             IPEndPoint remoteEndPoint = (IPEndPoint)tcpClient.Client.RemoteEndPoint;
 
             //Save the remote endpoint.
+            //This is shared between Udp and Tcp servers.
             inhRemoteIPEndPoint = remoteEndPoint;
 
-            //Encode password.
+            //Encode password. This allows us to compare with the hashed password sent by the client.
             byte[] tmpPasswordEncoding = MD5Manager.EncodePassword(password);
 
-            //Convert byte array to string.
+            //Convert byte array password to string.
             string tmpPassword = MD5Manager.ByteArrayToString(tmpPasswordEncoding);
 
             streamData = null;
 
+            //TODO password betyder intet lol
 
             //Send and recieve streams as long as the connection i present.
             while (tcpClient.Connected)
@@ -105,22 +114,25 @@ namespace GruppeHessNetworkAssignment.Network
                 {
                     streamData = streamReader.ReadLine();
 
-                    //Compare the two encoded passwords.
+                    //Compare the hashed password sent by the client with the hashed server password.
                     if (streamData != string.Empty && streamData == tmpPassword)
                     {
                         Console.WriteLine($"Recieved from Tcp client: {streamData}");
 
+                        //What to send to the client.
                         streamData = "Correct password.";
 
                         streamWriter.WriteLine(streamData);
                     }
 
+                    //Compare the hashed password sent by the client with the hashed server password.
                     else if (streamData != string.Empty && streamData != tmpPassword)
                     {
                         Console.WriteLine($"Recieved from Tcp client: {streamData}");
 
                         //What to send to the client.
                         streamData = "Incorrect password.";
+
                         streamWriter.WriteLine(streamData);
                     }
                 }
@@ -131,12 +143,13 @@ namespace GruppeHessNetworkAssignment.Network
                     Thread.CurrentThread.Abort();
                 }
 
-
-                streamWriter.WriteLine(streamData);
-
                 //Attempt to send the data to the client.
                 try
                 {
+                    //The data determined by the password comparison is written to the stream.
+                    streamWriter.WriteLine(streamData);
+
+                    //Flush the stream.
                     streamWriter.Flush();
                 }
 
@@ -146,13 +159,15 @@ namespace GruppeHessNetworkAssignment.Network
                     Thread.CurrentThread.Abort();
                 }
 
+                //Close the connection after data has been passed.
                 tcpClient.Close();
 
                 break;
             }
 
+            //Stop server and thread after closing the client connection.
             if (!tcpClient.Connected)
-            {
+            { 
                 tcpServer.Stop();
 
                 clientThread.Abort();
@@ -161,11 +176,12 @@ namespace GruppeHessNetworkAssignment.Network
             }
         }
 
+
         /// <summary>
         /// Returns the local IP for the host (local computer).
         /// https://stackoverflow.com/questions/8709427/get-local-system-ip-address-using-c-sharp
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Returns the players IP.</returns>
         private string GetLocalIP()
         {
             string hostName = Dns.GetHostName();
@@ -175,6 +191,12 @@ namespace GruppeHessNetworkAssignment.Network
             return addresses[addresses.Length - 1].ToString();
         }
 
+
+        /// <summary>
+        /// Generate and return a random password.
+        /// 8 characters long, only numbers.
+        /// </summary>
+        /// <returns>Returns the random password.</returns>
         private string GeneratePassword()
         {
             int pwLength = 8;
@@ -188,5 +210,6 @@ namespace GruppeHessNetworkAssignment.Network
 
             return password;
         }
+        #endregion
     }
 }

@@ -9,37 +9,49 @@ using System.Threading.Tasks;
 
 namespace GruppeHessNetworkAssignment
 {
+    /// <summary>
+    /// Class for creating enemies.
+    /// </summary>
     class Enemy : GameObject
     {
-        //private int iD;
-
-        public Enemy(Vector2 position/*, int shipID*/)
+        public Enemy(Vector2 position)
         {
             this.Position = position;
             velocity = new Vector2(0, 1);
             speed = 100f;
-            sprite = Asset.enemySprite;
-            //this.ID = shipID;
+            sprite = Asset.EnemySprite;
         }
 
-
+        /// <summary>
+        /// Collision code for enemies.
+        /// In this case, it's not needed.
+        /// </summary>
+        /// <param name="other"></param>
         public override void OnCollision(GameObject other)
         {
-
+            // No collision needed. It's all in the laser class.
         }
 
+        /// <summary>
+        /// Update method for Enemies.
+        /// </summary>
+        /// <param name="gameTime"></param>
         public override void Update(GameTime gameTime)
         {
+            // Makes sure the enemies can move.
             Move(gameTime);
 
-            if (Position.Y > GameWorld.Instance.ScreenHeight + Asset.enemySprite.Height)
+            // If an enemy moves down below the bottom edge of the screen,
+            // the player looses health and the enemy sprite is removed from the game.
+            if (Position.Y > GameWorld.Instance.ScreenHeight + Asset.EnemySprite.Height)
             {
                 GameWorld.Instance.Destroy(this);
 
-                  if (GameWorld.Instance.IsServer)
+                if (GameWorld.Instance.IsServer)
                 {
-                    GameWorld.Instance.ServerInstance.Send("Lose hp");
-                    GameWorld.Instance.PlayerServer.PlayerHealth--;
+                  // Makes sure the client looses hp as well.
+                  GameWorld.Instance.ServerInstance.Send("Lose hp");
+                  GameWorld.Instance.PlayerServer.PlayerHealth--;
                 }
             }
         }

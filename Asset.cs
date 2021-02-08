@@ -9,26 +9,33 @@ using System.Threading.Tasks;
 
 namespace GruppeHessNetworkAssignment
 {
+    /// <summary>
+    /// Class used to load all the assets (sprites) used in the game.
+    /// </summary>
     static class Asset
     {
-        public static Texture2D playerSprite;
-        public static Texture2D enemySprite;
-        public static Texture2D collisionBox;
-        public static Texture2D laserSprite;
-        public static Texture2D clientPlayerSprite;
+        public static Texture2D PlayerSprite { get; private set; }
+        public static Texture2D EnemySprite { get; private set; }
+        public static Texture2D CollisionBox { get; private set; }
+        public static Texture2D LaserSprite { get; private set; }
+        public static Texture2D ClientPlayerSprite { get; private set; }
 
-        public static SpriteFont scoreFont;
+        public static SpriteFont ScoreFont { get; private set; }
 
+        /// <summary>
+        /// Loads all sprites in the game.
+        /// </summary>
+        /// <param name="content"></param>
         public static void LoadContent(ContentManager content)
         {
-            playerSprite = content.Load<Texture2D>("1fwd");
-            clientPlayerSprite = content.Load<Texture2D>("1fwd");
-            laserSprite = content.Load<Texture2D>("laserGreen05");
+            PlayerSprite = content.Load<Texture2D>("1fwd");
+            ClientPlayerSprite = content.Load<Texture2D>("1fwd");
+            LaserSprite = content.Load<Texture2D>("laserGreen05");
 
-            enemySprite = content.Load<Texture2D>("enemyBlack1");
-            collisionBox = content.Load<Texture2D>("CollisionBox");
+            EnemySprite = content.Load<Texture2D>("enemyBlack1");
+            CollisionBox = content.Load<Texture2D>("CollisionBox");
 
-            scoreFont = content.Load<SpriteFont>("ScoreFont");
+            ScoreFont = content.Load<SpriteFont>("ScoreFont");
         }
     }
 }
