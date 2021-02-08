@@ -362,3 +362,4 @@ MigrationBackup/
 FodyWeavers.xsd
 *.cache
 obj/x86/Debug/GruppeHessNetworkAssignment.csprojAssemblyReference.cache
+.vs/GruppeHessNetworkAssignment/v16/.suo
